@@ -29,7 +29,6 @@ const dependencies = {
           host: 'registry-1.docker.io',
           path: `/v2/${r}/tags/list`
         }, auth);
-        console.log(ret);
         return ret;
       })
     },
