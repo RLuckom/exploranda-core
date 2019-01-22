@@ -1,5 +1,5 @@
 
-!["Build Status"](https://travis-ci.org/RLuckom/exploranda-core.svg?branch=master)
+!["Build Status"](https://travis-ci.com/RLuckom/exploranda-core.svg?branch=master)
 
 ## Introduction
 
