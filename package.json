@@ -7,8 +7,16 @@
     "test": "node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=spec/jasmine.json",
     "docs": "node generateDatasourceDocs.js > docs/accessSchemas.md"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rluckom/exploranda-core.git"
+  },
   "author": "Raphael Luckom",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rluckom/exploranda-core/issues"
+  },
+  "homepage": "https://github.com/rluckom/exploranda-core",
   "dependencies": {
     "async": "^2.6.1",
     "aws-sdk": "^2.392.0",
