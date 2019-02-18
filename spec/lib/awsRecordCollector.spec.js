@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const rewire = require('rewire');
 const {kinesisStreams, kinesisStream} = require('../../lib/dataSources/aws/kinesis');
-const awsRecordCollector = rewire('../../lib/awsRecordCollector');
+const awsRecordCollector = rewire('../../lib/recordCollectors/awsRecordCollector');
 
 const {lookUpRecords} = awsRecordCollector;
-const {sufficientParams} = require('../../lib/baseRecordCollector.js');
+const {sufficientParams} = require('../../lib/recordCollectors/baseRecordCollector.js');
 
 const arrayAndRecordMixedSchema = {
   name: 'servicesByClusterAndArnArray',

@@ -1,45 +1,33 @@
 {
-  "name": "exploranda",
-  "version": "4.0.2",
-  "description": "Building blocks for monitoring systems",
-  "main": "lib/reporter.js",
+  "name": "exploranda-core",
+  "version": "0.0.1",
+  "description": "exploranda data access components",
+  "main": "index.js",
   "scripts": {
     "test": "node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=spec/jasmine.json",
     "docs": "node generateDatasourceDocs.js > docs/accessSchemas.md"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rluckom/exploranda.git"
+    "url": "git+https://github.com/rluckom/exploranda-core.git"
   },
-  "keywords": [
-    "monitoring",
-    "aws",
-    "elasticsearch",
-    "blessed",
-    "graphs",
-    "dashboard"
-  ],
   "author": "Raphael Luckom",
-  "license": "MIT",
+  "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rluckom/exploranda/issues"
+    "url": "https://github.com/rluckom/exploranda-core/issues"
   },
-  "homepage": "https://github.com/rluckom/exploranda",
+  "homepage": "https://github.com/rluckom/exploranda-core",
   "dependencies": {
-    "async": "^2.6.0",
-    "aws-sdk": "^2.181.0",
-    "blessed": "^0.1.81",
-    "blessed-contrib": "^4.8.9",
-    "googleapis": "^34.0.0",
-    "lodash": "^4.17.4",
-    "marked": "^0.3.19",
-    "moment": "^2.22.2",
+    "async": "^2.6.1",
+    "aws-sdk": "^2.392.0",
+    "googleapis": "^36.0.0",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
     "parse-link-header": "^1.0.1",
-    "request": "^2.86.0"
+    "request": "^2.88.0"
   },
   "devDependencies": {
-    "jasmine": "^2.8.0",
-    "minimist": "^1.2.0",
-    "rewire": "^3.0.2"
+    "jasmine": "^3.3.1",
+    "rewire": "^4.0.1"
   }
 }

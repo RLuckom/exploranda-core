@@ -3,10 +3,10 @@ const {kinesisStreams, kinesisStream, kinesisStreamMetrics} = require('../../lib
 const {awsMock} = require('../awsMock');
 const {requestMock} = require('../requestMock');
 const rewire = require('rewire');
-const awsRecordCollector = rewire('../../lib/awsRecordCollector');
-const genericApiRecordCollector = rewire('../../lib/genericApiRecordCollector');
-const requestRecordCollector = rewire('../../lib/requestRecordCollector');
-const composer = rewire('../../lib/composer.js');
+const awsRecordCollector = rewire('../../lib/recordCollectors/awsRecordCollector');
+const genericApiRecordCollector = rewire('../../lib/recordCollectors/genericApiRecordCollector');
+const requestRecordCollector = rewire('../../lib/recordCollectors/requestRecordCollector');
+const composer = rewire('../../lib/gopher.js');
 
 const {doRequest} = requestRecordCollector;
 const {lookUpRecords} = awsRecordCollector;
@@ -143,11 +143,11 @@ function executeCachingTestSuite(suiteName, testCases) {
       });
     }
 
-    _.each(testCases, function({name, dataDependencies, phases}) {
+    _.each(testCases, function({name, dataDependencies, inputs, phases}) {
       it(name, function(done) {
         let phasesFinished = 0;
-        const gopher = new Gopher(dataDependencies);
-        _.each(phases, ({time, mocks, expectedValues, target, preCache, postCache}) => {
+        const gopher = new Gopher(dataDependencies, inputs);
+        _.each(phases, ({time, mocks, inputs, expectedValues, target, inputOverrides, preCache, postCache, preInputs, postInputs}) => {
           setTimeout(() => {
             console.log(`starting phase ${phasesFinished + 1}`);
             buildMocks();
@@ -158,6 +158,12 @@ function executeCachingTestSuite(suiteName, testCases) {
             if (preCache) {
               compareCache(gopher.getCache(), preCache);
             }
+            if (preInputs) {
+              expect(preInputs).toEqual(gopher.getInputs());
+            }
+            _.each(inputs, (value, path) => {
+              gopher.setInput(path, value);
+            });
             function testAssertionCallback(err, response) {
               expect(response).toEqual(expectedValues);
               _.each(mockBuilders, (mb) => {
@@ -166,13 +172,16 @@ function executeCachingTestSuite(suiteName, testCases) {
               if (postCache) {
                 compareCache(gopher.getCache(), postCache);
               }
+              if (postInputs) {
+                expect(postInputs).toEqual(gopher.getInputs());
+              }
               phasesFinished = phasesFinished + 1;
               console.log(`finished phase ${phasesFinished} out of ${phases.length} at ${Date.now()}`);
               if (phasesFinished === phases.length) {
                 done();
               }
             }
-            return target ? gopher.report(target, testAssertionCallback) : gopher.report(testAssertionCallback);
+            return gopher.report(target, inputOverrides, testAssertionCallback);
           }, time);
         });
         function register({source, sourceConfig}) {

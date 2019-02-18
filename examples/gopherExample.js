@@ -1,4 +1,4 @@
-const exploranda = require('../lib/reporter');
+const exploranda = require('../index');
 const _ = require('lodash');
 const moment = require('moment');
 

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const {docker} = require('../lib/dataSources');
-const exploranda = require('../lib/reporter');
+const exploranda = require('../index');
 
 const repos = [
   'library/elasticsearch',
@@ -8,27 +8,31 @@ const repos = [
   'library/alpine',
 ];
 
-function getReport() {
-  const reporter = new exploranda.Reporter();
-  reporter.setSchemas({
-    dependencies: {
-      dockerAuth: docker.authBuilder(
-          {value: 'auth.docker.io'},
-          {value: '/token'},
-          {value: _.map(repos, (r) => `repository:${r}:pull`)},
-          {value: 'registry.docker.io'}
-      ),
-      tags: docker.tagsBuilder(
-          {value: 'registry-1.docker.io'},
-          {value: _.map(repos, (r) => `/v2/${r}/tags/list`)},
-          {
-            source: 'dockerAuth',
-            formatter: ({dockerAuth}) => _.map(dockerAuth, 'body')
-          }
-      ),
+const dependencies = {
+  dockerAuth: docker.authBuilder(
+    {
+      value: {
+        host: 'auth.docker.io',
+        path: '/token',
+      },
     },
-  });
-  reporter.execute((e, r) => console.log(JSON.stringify(r, null, 2)));
-}
+    {
+      value: _.map(repos, (r) => `repository:${r}:pull`)
+    },
+    {value: 'registry.docker.io'}
+  ),
+  tags: docker.tagsBuilder(
+    {
+      source: 'dockerAuth',
+      formatter: ({dockerAuth}) => _.map(_.zip(repos, _.map(dockerAuth, 'body')), ([r, auth]) => {
+         const ret = _.merge({
+          host: 'registry-1.docker.io',
+          path: `/v2/${r}/tags/list`
+        }, auth);
+        return ret;
+      })
+    },
+  ),
+};
 
-getReport();
+exploranda.Gopher(dependencies).report();
