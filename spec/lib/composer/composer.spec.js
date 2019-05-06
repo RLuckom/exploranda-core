@@ -204,16 +204,23 @@ const twoRequestAndOneSyntheticTestCase = {
         dataSource: 'SYNTHETIC',
         transformation: ({request}) => {
           return request.request[0];
-        }
+        },
+        requiredParams: {
+          request: {
+            detectArray: (n) => false
+          }
+        },
       },
-      params: {request: {source: 'request'}}
+      params: {request: {
+        source: 'request'
+      }}
     }
   },
   namedMocks: {
     request: twoRequestMock(),
     synthetic: {
       source: 'SYNTHETIC',
-      expectedValue: {StreamNames: ['baz']}
+      expectedValue: [{StreamNames: ['baz']}]
     }
   },
 };
