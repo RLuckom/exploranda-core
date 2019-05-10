@@ -544,7 +544,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['bar/', 'baz/']}},
         }, {
           callParameters: [{
@@ -558,7 +558,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['qux', 'qux/']}},
         }, {
           callParameters: [{
@@ -572,7 +572,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: []}},
         }, {
           callParameters: [{
@@ -586,7 +586,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['bax']}},
         }],
       }
@@ -657,7 +657,7 @@ const elasticsearchInputNoDefaultTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
         }], 
       }
@@ -724,7 +724,7 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
         }], 
       }
@@ -764,7 +764,7 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['qux', 'quux']}},
         }], 
       }
@@ -806,7 +806,7 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['foo']}},
         }], 
       }

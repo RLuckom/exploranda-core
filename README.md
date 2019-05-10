@@ -597,6 +597,9 @@ also set the following fields to configure how requests to their API should be m
               given the parameters specified in the `headerParamKeys` array.
               If not specified, defaults to `_.identity`
 
+`detectErrors`: A function that is given the error, response, and body after
+              a call. Anything it returns is treated as an error object.
+
 ### Request AccessSchema Objects
 
 This accessSchema type describes a basic way to talk to HTTP / HTTPS APIs. It is
