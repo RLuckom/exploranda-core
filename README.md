@@ -173,6 +173,11 @@ Each dependency defines some attributes:
                  value will _not_ short-circuit fetching any downstream dependencies--only the 
                  `cacheLifetime` values of those dependencies control their cache behavior.
 
+`behaviors` : Object (optional), settings for how the results are fetched. The only setting currently
+              used is `parallelLimit`, which controls how many parallel calls will be made at once
+              for a given dependency in most situations ("tree" calls are the exception). The `behaviors`
+              object will eventually also subsume the `cacheLifetime` setting and implement retry settings.
+
 #### Dependency Params
 
 The values on the `params` object can be used to specify a static value, a runtime-generated value, or

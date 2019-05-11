@@ -115,144 +115,47 @@ function kinesisNamesMock() {
   };
 }
 
-function requestDependency() {
-  return {
-    accessSchema: {
-      dataSource: 'REQUEST',
-      params: {
-        shouldBeOverridden: 'should not appear',
-      },
-      generateRequest: (params) => {
-        expect(params).toEqual({shouldBeOverridden: 'correct'});
-        return {StreamNames: ['bar']};
-      }
-    },
-    params: {
-      shouldBeOverridden: {value: 'correct'}
-    }
-  };
-}
-
-function requestMock() {
-  return {
-    source: 'REQUEST',
-    sourceConfig: {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['qux']},
-      callParameters: [{StreamNames: ['bar']}]
-    },
-    expectedValue: {StreamNames: ['qux']}
-  };
-}
-
-function twoRequestDependency() {
-  return {
-    accessSchema: {
-      dataSource: 'REQUEST',
-      params: {
-        shouldBeOverridden: 'should not appear',
-      },
-      generateRequest: (params) => {
-        expect(params).toEqual({shouldBeOverridden: 'correct'});
-        return [{StreamNames: ['bar']}, {StreamNames: ['bax']}];
-      }
-    },
-    params: {
-      shouldBeOverridden: {value: 'correct'}
-    }
-  };
-}
-
-function twoRequestMock() {
-  return {
-    source: 'REQUEST',
-    sourceConfig: [
-    {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['baz']},
-      callParameters: [{StreamNames: ['bar']}]
-    },
-    {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['qux']},
-      callParameters: [{StreamNames: ['bax']}]
-    },
-    ],
-    expectedValue: [{StreamNames: ['baz']}, {StreamNames: ['qux']}]
-  };
-}
-
-const requestOnlyTestCase = {
-  name: 'Request-only test case',
+const twoAWSAndOneSyntheticTestCase = {
+  name: 'two AWS and one synthetic test case',
   dataDependencies: {
-    request: requestDependency(),
-  },
-  namedMocks: {
-    request: requestMock()
-  },
-};
-
-const twoRequestAndOneSyntheticTestCase = {
-  name: 'two request and one synthetic test case',
-  dataDependencies: {
-    request: twoRequestDependency(),
-    synthetic: {
-      accessSchema: {
-        dataSource: 'SYNTHETIC',
-        transformation: ({request}) => {
-          return request.request[0];
-        },
-        requiredParams: {
-          request: {
-            detectArray: (n) => false
-          }
-        },
-      },
-      params: {request: {
-        source: 'request'
-      }}
-    }
-  },
-  namedMocks: {
-    request: twoRequestMock(),
-    synthetic: {
-      source: 'SYNTHETIC',
-      expectedValue: [{StreamNames: ['baz']}]
-    }
-  },
-};
-
-const twoRequestTestCase = {
-  name: 'two request test case',
-  dataDependencies: {
-    request: twoRequestDependency(),
-  },
-  namedMocks: {
-    request: twoRequestMock()
-  },
-};
-
-const requestAndOneStreamTestCase = {
-  name: 'Request and one stream test case',
-  dataDependencies: {
-    request: requestDependency(),
     kinesisStream: {
       accessSchema: kinesisStream,
       params: {
         StreamName: {
-          source: 'request',
-          formatter: ({request}) => request.StreamNames[0]
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
         },
         StreamName1: {
-          source: 'request',
-          formatter: ({request}) => request.StreamNames[0]
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
         },
         apiConfig: apiConfig(),
       }
     },
+    kinesisStream1: {
+      accessSchema: kinesisStream,
+      params: {
+        StreamName: {
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
+        },
+        StreamName1: {
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
+        },
+        apiConfig: apiConfig(),
+      }
+    },
+    synthetic: {
+      accessSchema: {
+        dataSource: 'SYNTHETIC',
+        transformation: () => {
+          return [{StreamNames: ['qux']}];
+        },
+        requiredParams: {
+        },
+      },
+    }
   },
   namedMocks: {
     kinesisStream: {
@@ -260,7 +163,15 @@ const requestAndOneStreamTestCase = {
       sourceConfig: successfulKinesisCall('describeStream', [{StreamName: 'qux', StreamName1: 'qux'}], {StreamDescription: {StreamName: 'quxStream'}}),
       expectedValue: [{StreamName: 'quxStream'}]
     },
-    request: requestMock()
+    kinesisStream1: {
+      source: 'AWS',
+      sourceConfig: successfulKinesisCall('describeStream', [{StreamName: 'qux', StreamName1: 'qux'}], {StreamDescription: {StreamName: 'quxStream'}}),
+      expectedValue: [{StreamName: 'quxStream'}]
+    },
+    synthetic: {
+      source: 'SYNTHETIC',
+      expectedValue: [{StreamNames: ['qux']}]
+    }
   },
 };
 
@@ -869,6 +780,44 @@ const awsCachingTargetingTestCase = {
   }]
 };
 
+const awsRateLimitTestCase = {
+  name: 'Rate limiting case',
+  dataDependencies: {
+    kinesisStreams: {
+      accessSchema: kinesisStream,
+      behaviors: {parallelLimit: 2},
+      params: {
+        StreamName: {
+          value: ['foo', 'bar', 'baz']
+        },
+        apiConfig: apiConfig(),
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'kinesisStreams',
+    preCache: {},
+    mocks: {
+      kinesisStreams: {
+        source: 'AWS',
+        sourceConfig:[ 
+          successfulKinesisCall('describeStream', [{StreamName: 'foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
+          successfulKinesisCall('describeStream', [{StreamName: 'bar'}], {StreamDescription: {StreamName: 'barStream'}}),
+          successfulKinesisCall('describeStream', [{StreamName: 'baz'}], {StreamDescription: {StreamName: 'bazStream'}}),
+        ]
+      }
+    },
+    expectedValues: {
+      kinesisStreams: _.map(['foo', 'bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};}),
+    },
+    postCache: {
+    },
+  },
+  ],
+};
+
 const incompleteRequestAwsTestCase = {
   name: 'Multiple-request AWS dependency',
   dataDependencies: {
@@ -1031,6 +980,7 @@ const dependentAwsTestCase = {
   dataDependencies: {
     kinesisName: {
       accessSchema: kinesisStream,
+      behaviors: {parallelLimit: 1},
       params: {
         apiConfig: apiConfig(),
       }
@@ -1190,10 +1140,8 @@ const awsWithParamFormatter = {
 
 const basicTestCases = [
   basicAwsTestCase,
-  twoRequestTestCase,
-  twoRequestAndOneSyntheticTestCase,
+  twoAWSAndOneSyntheticTestCase,
   basicAwsWithGenerator,
-  requestAndOneStreamTestCase,
   basicAwsWithFormatter,
   awsWithParamFormatter,
   dependentAwsTestCase,
@@ -1204,10 +1152,10 @@ const basicTestCases = [
   doubleSourceTestCase,
   doubleSourceUseTestCase,
   incompleteRequestAwsTestCase,
-  requestOnlyTestCase
 ];
 
 const cachingTestCases = [
+  awsRateLimitTestCase,
   basicAwsCachingTestCase,
   elasticsearchInputTestCase,
   elasticsearchInputNoDefaultTestCase,

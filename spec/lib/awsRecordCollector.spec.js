@@ -128,7 +128,7 @@ describe('lookupRecords', function() {
     it('should just exec the request for the records', function() {
       let callbackCalled = false;
       const params = {p1: 'p2', apiConfig: {region: 'us-east-1'}};
-      lookUpRecords(kinesisStreams, params, (err, response) => {
+      lookUpRecords(kinesisStreams, params, {}, (err, response) => {
         expect(response).toEqual(kinesisStreamNames.StreamNames);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -141,7 +141,7 @@ describe('lookupRecords', function() {
       let callbackCalled = false;
       const params = {p1: 'p2', Limit: 200, apiConfig: {region: 'us-east-1'}};
       k2 = _.cloneDeep(kinesisStreams);
-      lookUpRecords(kinesisStreams, params, (err, response) => {
+      lookUpRecords(kinesisStreams, params, {}, (err, response) => {
         expect(response).toEqual(kinesisStreamNames.StreamNames);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -155,7 +155,7 @@ describe('lookupRecords', function() {
       const params = {p1: 'p2', Limit: 200, apiConfig: {region: 'us-east-1'}};
       const kinesisStreamNames1 = {StreamNames: ['s1', 's2', 's3'], HasMoreStreams: true};
       const kinesisStreamNames2 = {StreamNames: ['s4', 's5', 's6']};
-      lookUpRecords(kinesisStreams, params, (err, response) => {
+      lookUpRecords(kinesisStreams, params, {}, (err, response) => {
         expect(response).toEqual(_.concat([], kinesisStreamNames1.StreamNames, kinesisStreamNames2.StreamNames));
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -172,7 +172,7 @@ describe('lookupRecords', function() {
       const params = {cluster: 'clusterArn', services: ['service1', 'service2', 'service3'], apiConfig: {region: 'us-east-1'}};
       const services1 = {services: ['s1', 's2']};
       const services2 = {services: ['s3']};
-      lookUpRecords(arrayAndRecordMixedSchema, params, (err, response) => {
+      lookUpRecords(arrayAndRecordMixedSchema, params, {}, (err, response) => {
         expect(response).toEqual(['s1', 's2', 's3']);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -188,7 +188,7 @@ describe('lookupRecords', function() {
       let callbackCalled = false;
       const params = {apiConfig: {region: 'us-east-1'}, Limit: 40, cluster: 'clusterArn', services: ['service1', 'service2', 'service3']};
       const services = {services: ['s1', 's2', 's3']};
-      lookUpRecords(recordAndLiteralParamSchema, params, (err, response) => {
+      lookUpRecords(recordAndLiteralParamSchema, params, {}, (err, response) => {
         expect(response).toEqual(['s1', 's2', 's3']);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -202,7 +202,7 @@ describe('lookupRecords', function() {
       let callbackCalled = false;
       const params = {apiConfig: {region: 'us-east-1'}, Limit: 40, cluster: ['clusterArn1', 'clusterArn2'], services: ['service1', 'service2', 'service3']};
       const services = {services: ['s1', 's2', 's3']};
-      lookUpRecords(recordAndLiteralParamSchemaWithMergeIndividual, params, (err, response) => {
+      lookUpRecords(recordAndLiteralParamSchemaWithMergeIndividual, params, {}, (err, response) => {
         expect(response).toEqual(42);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -218,7 +218,7 @@ describe('lookupRecords', function() {
       let callbackCalled = false;
       const params = {StreamName: 's1', apiConfig: {region: 'us-east-1'}};
       const s1 = {StreamDescription: {StreamName: 's1'}};
-      lookUpRecords(kinesisStream, params, (err, response) => {
+      lookUpRecords(kinesisStream, params, {}, (err, response) => {
         expect(response[0]).toEqual(s1.StreamDescription);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -232,7 +232,7 @@ describe('lookupRecords', function() {
       const params = {StreamName: ['s1', 's2'], apiConfig: {region: 'us-east-1'}};
       const s1 = {StreamDescription: {StreamName: 's1'}};
       const s2 = {StreamDescription: {StreamName: 's2'}};
-      lookUpRecords(kinesisStream, params, (err, response) => {
+      lookUpRecords(kinesisStream, params, {}, (err, response) => {
         expect(response).toEqual([s1.StreamDescription, s2.StreamDescription]);
         expect(err).toBeFalsy();
         callbackCalled = true;
@@ -252,7 +252,7 @@ describe('lookupRecords', function() {
       const returnStream1 = {StreamDescription: {StreamName: 'stream1'}};
       const returnStream2 = {StreamDescription: {StreamName: 'stream2'}};
       const returnStream3 = {StreamDescription: {StreamName: 'stream3'}};
-      lookUpRecords(kinesisStream, params, (err, response) => {
+      lookUpRecords(kinesisStream, params, {}, (err, response) => {
         expect(response).toEqual([
           returnStream1.StreamDescription,
           returnStream2.StreamDescription,
@@ -275,7 +275,7 @@ describe('lookupRecords', function() {
       const returnStream1 = {StreamDescription: {StreamName: 'stream1'}};
       const returnStream2 = {StreamDescription: {StreamName: 'stream2'}};
       const returnStream3 = {StreamDescription: {StreamName: 'stream3'}};
-      lookUpRecords(kinesisStream, params, (err, response) => {
+      lookUpRecords(kinesisStream, params, {}, (err, response) => {
         expect(response).toEqual([]);
         expect(err).toBeFalsy();
         callbackCalled++;
