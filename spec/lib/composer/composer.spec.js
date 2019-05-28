@@ -204,6 +204,7 @@ const basicAwsCachingTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
@@ -220,6 +221,7 @@ const basicAwsCachingTestCase = {
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     }
@@ -241,6 +243,7 @@ const awsExpiringCacheTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
@@ -257,6 +260,7 @@ const awsExpiringCacheTestCase = {
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     }
@@ -272,6 +276,7 @@ const awsExpiringCacheTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'quux']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'quux']
     },
@@ -314,6 +319,7 @@ const awsCachedDependencyRequirementTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo']
     },
@@ -333,6 +339,7 @@ const awsCachedDependencyRequirementTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames1: ['foo', 'bar']
     },
@@ -353,6 +360,7 @@ const awsCachedDependencyRequirementTestCase = {
       kinesisNames1: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar']}],
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
     }
@@ -380,6 +388,7 @@ const awsCachedDependencyRequirementTestCase = {
       {collectorArgs: {apiConfig: apiConfig().value, StreamName: ['foo', 'bar'], falsyParam: 0, falsyParam2: false, falsyParam3: null, falsyParam4: ''}, r: [{StreamName: 'fooStream'}, {StreamName: 'barStream'}]},
       ],
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
       kinesisNames1: ['foo', 'bar'],
@@ -407,6 +416,7 @@ const awsCachedDependencyRequirementTestCase = {
       {collectorArgs: {apiConfig: apiConfig().value, StreamName: ['foo', 'bar'], falsyParam: 0, falsyParam2: false, falsyParam3: null, falsyParam4: ''}, r: [{StreamName: 'fooStream'}, {StreamName: 'barStream'}]},
       ],
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
       kinesisNames1: ['foo', 'bar'],
@@ -502,6 +512,7 @@ const vaultTreeTestCase = {
         }],
       }
     },
+    expectedError: null,
     expectedValues: {
       vaultKeys: [{
         'bar/': {
@@ -573,12 +584,155 @@ const elasticsearchInputNoDefaultTestCase = {
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
           hits: ['bar', 'baz'],
         },
       }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchErrorTestCase = {
+  name: 'Elasticsearch error test case with retry',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      behaviors: {
+        parallelLimit: 2,
+        detectErrors: (e, r, b) => {
+          console.log(e);
+          console.log(r);
+          console.log(b);
+          return e;
+        },
+        retryParams: {times: 2},
+      },
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          value: {queryString: 'searchTerm'},
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: "bad error",
+            response: {statusCode: 400},
+            body: null,
+          },
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: null,
+            response: {statusCode: 200},
+            body: {hits: {hits: ['bar', 'baz']}},
+          },
+        ], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchErrorDefaultTestCase = {
+  name: 'Elasticsearch error test case without retry',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      behaviors: {
+        parallelLimit: 2,
+      },
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          value: {queryString: 'searchTerm'},
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: "bad error",
+            response: {statusCode: 400},
+            body: null,
+          },
+        ], 
+      }
+    },
+    expectedError: new Error('Error fetching results for schema elasticsearchSearch Error bad error'),
+    expectedValues: {
+      elasticsearch: void(0)
     },
     postCache: {},
   },
@@ -640,6 +794,7 @@ const elasticsearchInputTestCase = {
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -680,6 +835,7 @@ const elasticsearchInputTestCase = {
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -722,6 +878,7 @@ const elasticsearchInputTestCase = {
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -760,6 +917,7 @@ const awsCachingTargetingTestCase = {
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
+    expectedError: null,
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
@@ -776,7 +934,8 @@ const awsCachingTargetingTestCase = {
     },
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
-    }
+    },
+    expectedError: null,
   }]
 };
 
@@ -809,6 +968,7 @@ const awsRateLimitTestCase = {
         ]
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisStreams: _.map(['foo', 'bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};}),
     },
@@ -1132,7 +1292,7 @@ const awsWithParamFormatter = {
         successfulKinesisCall('describeStream', [{StreamName: 'baz'}], {StreamDescription: {StreamName: 'bazStream'}}),
         successfulKinesisCall('describeStream', [{StreamName: 'bar'}], {StreamDescription: {StreamName: 'barStream'}}),
       ],
-      expectedValue: _.map(['bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};})
+      expectedValue: _.map(['bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};}),
     }
   },
   implicitMocks: []
@@ -1158,6 +1318,8 @@ const cachingTestCases = [
   awsRateLimitTestCase,
   basicAwsCachingTestCase,
   elasticsearchInputTestCase,
+  elasticsearchErrorTestCase,
+  elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
   vaultTreeTestCase,
   awsCachingTargetingTestCase,

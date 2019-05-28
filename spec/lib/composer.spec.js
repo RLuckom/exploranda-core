@@ -135,7 +135,7 @@ function executeCachingTestSuite(suiteName, testCases) {
       it(name, function(done) {
         let phasesFinished = 0;
         const gopher = new Gopher(dataDependencies, inputs);
-        _.each(phases, ({time, mocks, inputs, expectedValues, target, inputOverrides, preCache, postCache, preInputs, postInputs}) => {
+        _.each(phases, ({time, mocks, inputs, expectedValues, expectedError, target, inputOverrides, preCache, postCache, preInputs, postInputs}) => {
           setTimeout(() => {
             console.log(`starting phase ${phasesFinished + 1}`);
             buildMocks();
@@ -153,6 +153,7 @@ function executeCachingTestSuite(suiteName, testCases) {
               gopher.setInput(path, value);
             });
             function testAssertionCallback(err, response) {
+              expect(err).toEqual(expectedError);
               expect(response).toEqual(expectedValues);
               _.each(mockBuilders, (mb) => {
                 mb.verifyExpectations();
