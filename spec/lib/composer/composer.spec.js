@@ -100,7 +100,7 @@ const kinesisStreamWithANonRequiredParam = {
 function kinesisNamesDependency(cacheLifetime) {
   return {
     accessSchema: kinesisStreams,
-    cacheLifetime: cacheLifetime,
+    behaviors: {cacheLifetime},
     params: {
       apiConfig: apiConfig(),
     }
@@ -178,7 +178,7 @@ const twoAWSAndOneSyntheticTestCase = {
 const basicAwsTestCase = {
   name: 'Basic Single-AWS-request case',
   dataDependencies: {
-    // add a cacheLifetime. This testt does not rely on caching.
+    // add a cacheLifetime. This test does not rely on caching.
     // It only makes one request. Adding a cacheLifetime should
     // mean that the result gets cached, which should not interfere
     // with the success of this test case.
@@ -294,7 +294,7 @@ const awsCachedDependencyRequirementTestCase = {
     kinesisNames1: kinesisNamesDependency(1000),
     kinesisStreams: {
       accessSchema: kinesisStream,
-      cacheLifetime: 1000,
+      behaviors: {cacheLifetime: 1000},
       params: {
         StreamName: {
           source: ['kinesisNames', 'kinesisNames1'],

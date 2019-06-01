@@ -167,18 +167,20 @@ Each dependency defines some attributes:
             result from an array of one instance to the instance record itself, for the convenience of
             referencing it elsewhere.
 
-`cacheLifetime`: Number (optional), Amount of time, in ms, to keep the result of a call to this
-                 dependency with a particular set of arguments cached. The arguments and dependencies
-                 are resolved _before_ the `cacheLifetime` is evaluated, so a large cacheLifetime
-                 value will _not_ short-circuit fetching any downstream dependencies--only the 
-                 `cacheLifetime` values of those dependencies control their cache behavior.
-
 `behaviors` : Object (optional), settings for how the results are fetched. Currently implemented are
               `parallelLimit`, which controls how many parallel calls will be made at once
               for a given dependency in most situations ("tree" calls are the exception). 
               `retryParams`, an object passed as the first argument to
               [`async.retry`](https://caolan.github.io/async/v3/docs.html#retry) to configure retry behavior, and
-              `detectErrors`, a function called with the `err, result` of the recordcollector and the return value of which is passed as the error to `async.retry`. This return value can be used with the `errorFilter` in the `retryParams` to implement error-specific retries.
+              `detectErrors`, a function called with the `err, result` 
+              of the recordcollector and the return value of which is passed as the 
+              error to `async.retry`. This return value can be used with the 
+              `errorFilter` in the `retryParams` to implement error-specific retries, and `cacheLifetime`, an
+              Amount of time, in ms, to keep the result of a call to this
+              dependency with a particular set of arguments cached. The arguments and dependencies
+              are resolved _before_ the `cacheLifetime` is evaluated, so a large cacheLifetime
+              value will _not_ short-circuit fetching any downstream dependencies--only the 
+              `cacheLifetime` values of those dependencies control their cache behavior.
 
 #### Dependency Params
 
