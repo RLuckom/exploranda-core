@@ -17,10 +17,11 @@ function requestMock() {
       throw new Error(`Last argument for request was not a function: ${callbackReceived}`);
     }
     return setTimeout(() => {
+      const result = _.cloneDeep(expectation.results[expectation.timesCalled - 1]);
       callbackReceived(
-        _.cloneDeep(expectation.error), 
-        _.cloneDeep(expectation.response),
-        _.cloneDeep(expectation.body)
+        _.cloneDeep(result.error), 
+        _.cloneDeep(result.response),
+        _.cloneDeep(result.body)
       );
     });
   }
@@ -32,11 +33,15 @@ function requestMock() {
         timesCalled: 0,
         timesExpected: 0,
         args: callParameters,
-        error,
-        response,
-        body
+        results: [{
+          error,
+          response,
+          body
+        }]
       });
       requestExpectations.push(expectation);
+    } else {
+      expectation.results.push(_.cloneDeep({error, response, body}));
     }
     expectation.timesExpected++;
   }

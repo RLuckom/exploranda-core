@@ -100,7 +100,7 @@ const kinesisStreamWithANonRequiredParam = {
 function kinesisNamesDependency(cacheLifetime) {
   return {
     accessSchema: kinesisStreams,
-    cacheLifetime: cacheLifetime,
+    behaviors: {cacheLifetime},
     params: {
       apiConfig: apiConfig(),
     }
@@ -115,144 +115,47 @@ function kinesisNamesMock() {
   };
 }
 
-function requestDependency() {
-  return {
-    accessSchema: {
-      dataSource: 'REQUEST',
-      params: {
-        shouldBeOverridden: 'should not appear',
-      },
-      generateRequest: (params) => {
-        expect(params).toEqual({shouldBeOverridden: 'correct'});
-        return {StreamNames: ['bar']};
-      }
-    },
-    params: {
-      shouldBeOverridden: {value: 'correct'}
-    }
-  };
-}
-
-function requestMock() {
-  return {
-    source: 'REQUEST',
-    sourceConfig: {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['qux']},
-      callParameters: [{StreamNames: ['bar']}]
-    },
-    expectedValue: {StreamNames: ['qux']}
-  };
-}
-
-function twoRequestDependency() {
-  return {
-    accessSchema: {
-      dataSource: 'REQUEST',
-      params: {
-        shouldBeOverridden: 'should not appear',
-      },
-      generateRequest: (params) => {
-        expect(params).toEqual({shouldBeOverridden: 'correct'});
-        return [{StreamNames: ['bar']}, {StreamNames: ['bax']}];
-      }
-    },
-    params: {
-      shouldBeOverridden: {value: 'correct'}
-    }
-  };
-}
-
-function twoRequestMock() {
-  return {
-    source: 'REQUEST',
-    sourceConfig: [
-    {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['baz']},
-      callParameters: [{StreamNames: ['bar']}]
-    },
-    {
-      error: null,
-      response: {statusCode: '200'},
-      body: {StreamNames: ['qux']},
-      callParameters: [{StreamNames: ['bax']}]
-    },
-    ],
-    expectedValue: [{StreamNames: ['baz']}, {StreamNames: ['qux']}]
-  };
-}
-
-const requestOnlyTestCase = {
-  name: 'Request-only test case',
+const twoAWSAndOneSyntheticTestCase = {
+  name: 'two AWS and one synthetic test case',
   dataDependencies: {
-    request: requestDependency(),
-  },
-  namedMocks: {
-    request: requestMock()
-  },
-};
-
-const twoRequestAndOneSyntheticTestCase = {
-  name: 'two request and one synthetic test case',
-  dataDependencies: {
-    request: twoRequestDependency(),
-    synthetic: {
-      accessSchema: {
-        dataSource: 'SYNTHETIC',
-        transformation: ({request}) => {
-          return request.request[0];
-        },
-        requiredParams: {
-          request: {
-            detectArray: (n) => false
-          }
-        },
-      },
-      params: {request: {
-        source: 'request'
-      }}
-    }
-  },
-  namedMocks: {
-    request: twoRequestMock(),
-    synthetic: {
-      source: 'SYNTHETIC',
-      expectedValue: [{StreamNames: ['baz']}]
-    }
-  },
-};
-
-const twoRequestTestCase = {
-  name: 'two request test case',
-  dataDependencies: {
-    request: twoRequestDependency(),
-  },
-  namedMocks: {
-    request: twoRequestMock()
-  },
-};
-
-const requestAndOneStreamTestCase = {
-  name: 'Request and one stream test case',
-  dataDependencies: {
-    request: requestDependency(),
     kinesisStream: {
       accessSchema: kinesisStream,
       params: {
         StreamName: {
-          source: 'request',
-          formatter: ({request}) => request.StreamNames[0]
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
         },
         StreamName1: {
-          source: 'request',
-          formatter: ({request}) => request.StreamNames[0]
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
         },
         apiConfig: apiConfig(),
       }
     },
+    kinesisStream1: {
+      accessSchema: kinesisStream,
+      params: {
+        StreamName: {
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
+        },
+        StreamName1: {
+          source: 'synthetic',
+          formatter: ({synthetic}) => synthetic[0].StreamNames[0]
+        },
+        apiConfig: apiConfig(),
+      }
+    },
+    synthetic: {
+      accessSchema: {
+        dataSource: 'SYNTHETIC',
+        transformation: () => {
+          return [{StreamNames: ['qux']}];
+        },
+        requiredParams: {
+        },
+      },
+    }
   },
   namedMocks: {
     kinesisStream: {
@@ -260,14 +163,22 @@ const requestAndOneStreamTestCase = {
       sourceConfig: successfulKinesisCall('describeStream', [{StreamName: 'qux', StreamName1: 'qux'}], {StreamDescription: {StreamName: 'quxStream'}}),
       expectedValue: [{StreamName: 'quxStream'}]
     },
-    request: requestMock()
+    kinesisStream1: {
+      source: 'AWS',
+      sourceConfig: successfulKinesisCall('describeStream', [{StreamName: 'qux', StreamName1: 'qux'}], {StreamDescription: {StreamName: 'quxStream'}}),
+      expectedValue: [{StreamName: 'quxStream'}]
+    },
+    synthetic: {
+      source: 'SYNTHETIC',
+      expectedValue: [{StreamNames: ['qux']}]
+    }
   },
 };
 
 const basicAwsTestCase = {
   name: 'Basic Single-AWS-request case',
   dataDependencies: {
-    // add a cacheLifetime. This testt does not rely on caching.
+    // add a cacheLifetime. This test does not rely on caching.
     // It only makes one request. Adding a cacheLifetime should
     // mean that the result gets cached, which should not interfere
     // with the success of this test case.
@@ -293,6 +204,7 @@ const basicAwsCachingTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
@@ -309,6 +221,7 @@ const basicAwsCachingTestCase = {
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     }
@@ -330,6 +243,7 @@ const awsExpiringCacheTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
@@ -346,6 +260,7 @@ const awsExpiringCacheTestCase = {
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     }
@@ -361,6 +276,7 @@ const awsExpiringCacheTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'quux']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'quux']
     },
@@ -378,7 +294,7 @@ const awsCachedDependencyRequirementTestCase = {
     kinesisNames1: kinesisNamesDependency(1000),
     kinesisStreams: {
       accessSchema: kinesisStream,
-      cacheLifetime: 1000,
+      behaviors: {cacheLifetime: 1000},
       params: {
         StreamName: {
           source: ['kinesisNames', 'kinesisNames1'],
@@ -403,6 +319,7 @@ const awsCachedDependencyRequirementTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo']
     },
@@ -422,6 +339,7 @@ const awsCachedDependencyRequirementTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames1: ['foo', 'bar']
     },
@@ -442,6 +360,7 @@ const awsCachedDependencyRequirementTestCase = {
       kinesisNames1: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar']}],
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
     }
@@ -469,6 +388,7 @@ const awsCachedDependencyRequirementTestCase = {
       {collectorArgs: {apiConfig: apiConfig().value, StreamName: ['foo', 'bar'], falsyParam: 0, falsyParam2: false, falsyParam3: null, falsyParam4: ''}, r: [{StreamName: 'fooStream'}, {StreamName: 'barStream'}]},
       ],
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
       kinesisNames1: ['foo', 'bar'],
@@ -496,6 +416,7 @@ const awsCachedDependencyRequirementTestCase = {
       {collectorArgs: {apiConfig: apiConfig().value, StreamName: ['foo', 'bar'], falsyParam: 0, falsyParam2: false, falsyParam3: null, falsyParam4: ''}, r: [{StreamName: 'fooStream'}, {StreamName: 'barStream'}]},
       ],
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo'],
       kinesisNames1: ['foo', 'bar'],
@@ -544,7 +465,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['bar/', 'baz/']}},
         }, {
           callParameters: [{
@@ -558,7 +479,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['qux', 'qux/']}},
         }, {
           callParameters: [{
@@ -572,7 +493,7 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: []}},
         }, {
           callParameters: [{
@@ -586,11 +507,12 @@ const vaultTreeTestCase = {
             json: true,
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {data: {keys: ['bax']}},
         }],
       }
     },
+    expectedError: null,
     expectedValues: {
       vaultKeys: [{
         'bar/': {
@@ -657,17 +579,160 @@ const elasticsearchInputNoDefaultTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
           hits: ['bar', 'baz'],
         },
       }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchErrorTestCase = {
+  name: 'Elasticsearch error test case with retry',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      behaviors: {
+        parallelLimit: 2,
+        detectErrors: (e, r, b) => {
+          console.log(e);
+          console.log(r);
+          console.log(b);
+          return e;
+        },
+        retryParams: {times: 2},
+      },
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          value: {queryString: 'searchTerm'},
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: "bad error",
+            response: {statusCode: 400},
+            body: null,
+          },
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: null,
+            response: {statusCode: 200},
+            body: {hits: {hits: ['bar', 'baz']}},
+          },
+        ], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchErrorDefaultTestCase = {
+  name: 'Elasticsearch error test case without retry',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      behaviors: {
+        parallelLimit: 2,
+      },
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          value: {queryString: 'searchTerm'},
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [
+          {
+            callParameters: [{
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              json: true,
+              method: 'POST',
+            }],
+            error: "bad error",
+            response: {statusCode: 400},
+            body: null,
+          },
+        ], 
+      }
+    },
+    expectedError: new Error('Error fetching results for schema elasticsearchSearch Error bad error'),
+    expectedValues: {
+      elasticsearch: void(0)
     },
     postCache: {},
   },
@@ -724,11 +789,12 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -764,11 +830,12 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['qux', 'quux']}},
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -806,11 +873,12 @@ const elasticsearchInputTestCase = {
             method: 'POST',
           }],
           error: null,
-          response: {statusCode: '200'},
+          response: {statusCode: 200},
           body: {hits: {hits: ['foo']}},
         }], 
       }
     },
+    expectedError: null,
     expectedValues: {
       elasticsearch: [{
         hits: {
@@ -849,6 +917,7 @@ const awsCachingTargetingTestCase = {
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
+    expectedError: null,
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
@@ -865,8 +934,48 @@ const awsCachingTargetingTestCase = {
     },
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
-    }
+    },
+    expectedError: null,
   }]
+};
+
+const awsRateLimitTestCase = {
+  name: 'Rate limiting case',
+  dataDependencies: {
+    kinesisStreams: {
+      accessSchema: kinesisStream,
+      behaviors: {parallelLimit: 2},
+      params: {
+        StreamName: {
+          value: ['foo', 'bar', 'baz']
+        },
+        apiConfig: apiConfig(),
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'kinesisStreams',
+    preCache: {},
+    mocks: {
+      kinesisStreams: {
+        source: 'AWS',
+        sourceConfig:[ 
+          successfulKinesisCall('describeStream', [{StreamName: 'foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
+          successfulKinesisCall('describeStream', [{StreamName: 'bar'}], {StreamDescription: {StreamName: 'barStream'}}),
+          successfulKinesisCall('describeStream', [{StreamName: 'baz'}], {StreamDescription: {StreamName: 'bazStream'}}),
+        ]
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      kinesisStreams: _.map(['foo', 'bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};}),
+    },
+    postCache: {
+    },
+  },
+  ],
 };
 
 const incompleteRequestAwsTestCase = {
@@ -1031,6 +1140,7 @@ const dependentAwsTestCase = {
   dataDependencies: {
     kinesisName: {
       accessSchema: kinesisStream,
+      behaviors: {parallelLimit: 1},
       params: {
         apiConfig: apiConfig(),
       }
@@ -1182,7 +1292,7 @@ const awsWithParamFormatter = {
         successfulKinesisCall('describeStream', [{StreamName: 'baz'}], {StreamDescription: {StreamName: 'bazStream'}}),
         successfulKinesisCall('describeStream', [{StreamName: 'bar'}], {StreamDescription: {StreamName: 'barStream'}}),
       ],
-      expectedValue: _.map(['bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};})
+      expectedValue: _.map(['bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};}),
     }
   },
   implicitMocks: []
@@ -1190,10 +1300,8 @@ const awsWithParamFormatter = {
 
 const basicTestCases = [
   basicAwsTestCase,
-  twoRequestTestCase,
-  twoRequestAndOneSyntheticTestCase,
+  twoAWSAndOneSyntheticTestCase,
   basicAwsWithGenerator,
-  requestAndOneStreamTestCase,
   basicAwsWithFormatter,
   awsWithParamFormatter,
   dependentAwsTestCase,
@@ -1204,12 +1312,14 @@ const basicTestCases = [
   doubleSourceTestCase,
   doubleSourceUseTestCase,
   incompleteRequestAwsTestCase,
-  requestOnlyTestCase
 ];
 
 const cachingTestCases = [
+  awsRateLimitTestCase,
   basicAwsCachingTestCase,
   elasticsearchInputTestCase,
+  elasticsearchErrorTestCase,
+  elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
   vaultTreeTestCase,
   awsCachingTargetingTestCase,

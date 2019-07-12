@@ -33,6 +33,7 @@ const basicAwsCachingTestCase = {
         sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
       }
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     },
@@ -49,6 +50,7 @@ const basicAwsCachingTestCase = {
     postCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
     },
+    expectedError: null,
     expectedValues: {
       kinesisNames: ['foo', 'bar', 'baz']
     }
@@ -76,6 +78,8 @@ or arrays of mock objects.
 `target`: the argument to be passed to `report`
 
 `expectedValues`: The expected result of calling `report`.
+
+`expectedError`: The expected error of calling `report`.
 
 `preCache`: the expected state of the cache before the test starts.
 
