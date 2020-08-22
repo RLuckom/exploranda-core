@@ -1,6 +1,6 @@
 {
   "name": "exploranda-core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "exploranda data access components",
   "main": "index.js",
   "scripts": {
