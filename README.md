@@ -650,3 +650,24 @@ use in multiple downstream dependencies.
                                as an object `{paramName: <value>`}`.
                                The return value of this function is
                                used as the value of this dependency.
+
+### Sharp AccessSchema Objects
+
+This accessSchema type represents image processing operations using the [sharp](https://sharp.pixelplumbing.com/)
+library.
+
+#### Fields
+
+`dataSource`: (required) : must be exactly `'SHARP'`
+
+`returnsPromise`: If the method returns a promise
+
+`nameArguments`: The sharp library includes methods with varying numbers of arguments, with one or more named args,
+                 then an "options" arg. The `namedArguments` should be an ordered array of the keys on the params where
+                 the named args will be found. For instance, if the `nameArguments` is `['width']`, then from the params
+                 `{width: 90, height: 98}`, the method would be called like `method(90, {height: 98})`
+
+`transformation`: (required) : Function, passed the resolved params
+                               as an object `{paramName: <value>`}`.
+                               The return value of this function is
+                               used as the value of this dependency.
