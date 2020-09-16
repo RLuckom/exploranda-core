@@ -553,6 +553,16 @@ parameters whether what it sees is "an array of Dimension objects, to be sent as
 Dimensions parameter in a single call" or "an array of _arrays_ of Dimension objects,
 meant to be the arguments to _multiple_ calls".
 
+`formatter` (Function) : A function that will be applied to the _literal_ value of the param, right before
+it's sent to the API. For example, the AWS DynamoDB API operates on a fairly nonintuitive 
+typed object schema, for which they provide a [converter](https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/Converter.html#marshall-property) 
+that converts regular JS objects to and from the special DynamoDB schema. This `formatter` on the
+accessSchema `param` object allows this converter to operate at the last possible moment
+before calls are sent to the API, so that the calling code doesn't need to worry about
+operating on the Dynamo schema-version of objects. For times when you want to do the same
+translation for _incoming_ data, you can use a function as the `value.path` attribute that
+performs the transformation.
+
 ### AccessSchema Object Extensions for Generic Request-Based APIs
 
 For many common APIs it is simpler to just use https://github.com/request/request[request js] 

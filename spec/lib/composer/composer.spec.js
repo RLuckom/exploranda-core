@@ -76,7 +76,9 @@ const kinesisStreamWithANonRequiredParam = {
   params: {
   },
   optionalParams: {
-    otherParam: {}
+    otherParam: {
+      formatter: (op) => `${op}.foo`
+    }
   },
   requiredParams: {
     StreamName: {
@@ -1204,9 +1206,9 @@ const dependentAwsTestCaseWithAnOptionalParam = {
     kinesisName: {
       source: 'AWS',
       sourceConfig: [
-        successfulKinesisCall('describeStream', [{StreamName: 'foo', otherParam: 'foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
-        successfulKinesisCall('describeStream', [{StreamName: 'bar', otherParam: 'bar'}], {StreamDescription: {StreamName: 'barStream'}}),
-        successfulKinesisCall('describeStream', [{StreamName: 'baz', otherParam: 'baz'}], {StreamDescription: {StreamName: 'bazStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'foo', otherParam: 'foo.foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'bar', otherParam: 'bar.foo'}], {StreamDescription: {StreamName: 'barStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'baz', otherParam: 'baz.foo'}], {StreamDescription: {StreamName: 'bazStream'}}),
       ],
       expectedValue: _.map(['foo', 'bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};})
     }
@@ -1231,9 +1233,9 @@ const dependentAwsTestCaseWithAnOptionalParamSpecifiedSingly = {
     kinesisName: {
       source: 'AWS',
       sourceConfig: [
-        successfulKinesisCall('describeStream', [{StreamName: 'foo', otherParam: 'foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
-        successfulKinesisCall('describeStream', [{StreamName: 'bar', otherParam: 'foo'}], {StreamDescription: {StreamName: 'barStream'}}),
-        successfulKinesisCall('describeStream', [{StreamName: 'baz', otherParam: 'foo'}], {StreamDescription: {StreamName: 'bazStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'foo', otherParam: 'foo.foo'}], {StreamDescription: {StreamName: 'fooStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'bar', otherParam: 'foo.foo'}], {StreamDescription: {StreamName: 'barStream'}}),
+        successfulKinesisCall('describeStream', [{StreamName: 'baz', otherParam: 'foo.foo'}], {StreamDescription: {StreamName: 'bazStream'}}),
       ],
       expectedValue: _.map(['foo', 'bar', 'baz'], (s) => {return {StreamName: `${s}Stream`};})
     }
