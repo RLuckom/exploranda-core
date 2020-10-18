@@ -596,6 +596,9 @@ also set the following fields to configure how requests to their API should be m
 `bodyParamKeys`: an array of the names of parameters to be used as key / value
                   pairs in the request body.
 
+`formParamKeys`: an array of the names of parameters to be used as key / value
+                  pairs in the request form.
+
 `headerParamKeys`: an array of the names of parameters to be used as the request headers.
 
 `urlBuilder`: A function that will construct the URL given the
@@ -606,6 +609,10 @@ also set the following fields to configure how requests to their API should be m
 
 `requestQueryBuilder`: A function that will construct the URL query object
               given the parameters specified in the `queryParamKeys` array.
+              If not specified, defaults to `_.identity`
+
+`requestFormBuilder`: A function that will construct the URL form object
+              given the parameters specified in the `formParamKeys` array.
               If not specified, defaults to `_.identity`
 
 `requestBodyBuilder`: A function that will construct the URL body
