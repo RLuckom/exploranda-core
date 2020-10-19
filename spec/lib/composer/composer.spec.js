@@ -459,7 +459,6 @@ const vaultTreeTestCase = {
           callParameters: [{
             url: 'https://www.example.com/secrets/foo/',
             method: 'GET',
-            form: {},
             qs: {list: true},
             headers: {
               'X-Vault-Token': 'secretVaultToken'
@@ -475,7 +474,6 @@ const vaultTreeTestCase = {
             url: 'https://www.example.com/secrets/foo/bar/',
             method: 'GET',
             qs: {list: true},
-            form: {},
             headers: {
               'X-Vault-Token': 'secretVaultToken'
             },
@@ -490,7 +488,6 @@ const vaultTreeTestCase = {
             url: 'https://www.example.com/secrets/foo/baz/',
             method: 'GET',
             qs: {list: true},
-            form: {},
             headers: {
               'X-Vault-Token': 'secretVaultToken'
             },
@@ -504,7 +501,6 @@ const vaultTreeTestCase = {
           callParameters: [{
             url: 'https://www.example.com/secrets/foo/bar/qux/',
             method: 'GET',
-            form: {},
             qs: {list: true},
             headers: {
               'X-Vault-Token': 'secretVaultToken'
@@ -530,64 +526,6 @@ const vaultTreeTestCase = {
           }
         },
         'baz/': {}
-      }],
-    },
-    postCache: {},
-  },
-  ]
-};
-
-const slackInputFormTestCase = {
-  name: 'slack form input requests test case',
-  dataDependencies: {
-    slack: {
-      accessSchema: {
-        dataSource: 'GENERIC_API',
-        host: 'slack.com',
-        path: '/api/conversations.list',
-        formParamKeys: ['token'],
-        bodyParamKeys: []
-      },
-      params: {
-        token : {value: 'secrettoken'},
-      }
-    },
-  },
-  phases: [
-  {
-    time: 0,
-    target: 'slack',
-    preCache: {},
-    preInputs: {},
-    inputs: {},
-    postInputs: {},
-    mocks: {
-      slack: {
-        source: 'GENERIC_API',
-        sourceConfig: [{
-          callParameters: [{
-            url: 'https://slack.com/api/conversations.list',
-            headers: {},
-            form: {
-              token: 'secrettoken'
-            },
-            qs: {},
-            body: {},
-            json: true,
-            method: 'GET',
-          }],
-          error: null,
-          response: {statusCode: 200},
-          body: {channels: [1, 2]},
-        }], 
-      }
-    },
-    expectedError: null,
-    expectedValues: {
-      slack: [{
-        body: {channels: [1, 2]},
-        statusCode: 200,
-        headers: void(0)
       }],
     },
     postCache: {},
@@ -635,7 +573,6 @@ const elasticsearchInputNoDefaultTestCase = {
           callParameters: [{
             url: 'https://www.example.com/_search',
             headers: {},
-            form: {},
             qs: {apikey: 'secretApiKey'},
             body: {
               query: {queryString: 'input1'},
@@ -704,7 +641,6 @@ const elasticsearchErrorTestCase = {
             callParameters: [{
               url: 'https://www.example.com/_search',
               headers: {},
-              form: {},
               qs: {apikey: 'secretApiKey'},
               body: {
                 query: {queryString: 'searchTerm'},
@@ -720,7 +656,6 @@ const elasticsearchErrorTestCase = {
             callParameters: [{
               url: 'https://www.example.com/_search',
               headers: {},
-              form: {},
               qs: {apikey: 'secretApiKey'},
               body: {
                 query: {queryString: 'searchTerm'},
@@ -783,7 +718,6 @@ const elasticsearchErrorDefaultTestCase = {
             callParameters: [{
               url: 'https://www.example.com/_search',
               headers: {},
-              form: {},
               qs: {apikey: 'secretApiKey'},
               body: {
                 query: {queryString: 'searchTerm'},
@@ -849,7 +783,6 @@ const elasticsearchInputTestCase = {
           callParameters: [{
             url: 'https://www.example.com/_search',
             headers: {},
-            form: {},
             qs: {apikey: 'secretApiKey'},
             body: {
               query: {queryString: 'input1'},
@@ -891,7 +824,6 @@ const elasticsearchInputTestCase = {
           callParameters: [{
             url: 'https://www.example.com/_search',
             headers: {},
-            form: {},
             qs: {apikey: 'secretApiKey'},
             body: {
               query: {queryString: 'inputOverride'},
@@ -935,7 +867,6 @@ const elasticsearchInputTestCase = {
           callParameters: [{
             url: 'https://www.example.com/_search',
             headers: {},
-            form: {},
             qs: {apikey: 'secretApiKey'},
             body: {
               query: {queryString: 'input3'},
@@ -1392,7 +1323,6 @@ const cachingTestCases = [
   elasticsearchErrorTestCase,
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
-  slackInputFormTestCase,
   vaultTreeTestCase,
   awsCachingTargetingTestCase,
   awsExpiringCacheTestCase,
