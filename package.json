@@ -1,6 +1,6 @@
 {
   "name": "exploranda-core",
-  "version": "0.2.16",
+  "version": "0.3.0",
   "description": "exploranda data access components",
   "main": "index.js",
   "scripts": {
@@ -23,8 +23,9 @@
     "googleapis": "^60.0.1",
     "lodash": "^4.17.20",
     "moment": "^2.29.0",
+    "needle": "^2.5.2",
     "parse-link-header": "^1.0.1",
-    "request": "^2.88.2",
+    "qs": "^6.9.4",
     "sharp": "^0.26.1"
   },
   "devDependencies": {

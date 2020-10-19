@@ -456,7 +456,7 @@ const vaultTreeTestCase = {
       vaultKeys: {
         source: 'GENERIC_API',
         sourceConfig: [{
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/secrets/foo/',
             method: 'GET',
             qs: {list: true},
@@ -465,12 +465,12 @@ const vaultTreeTestCase = {
             },
             body: void(0),
             json: true,
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {data: {keys: ['bar/', 'baz/']}},
         }, {
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/secrets/foo/bar/',
             method: 'GET',
             qs: {list: true},
@@ -479,12 +479,12 @@ const vaultTreeTestCase = {
             },
             body: void(0),
             json: true,
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {data: {keys: ['qux', 'qux/']}},
         }, {
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/secrets/foo/baz/',
             method: 'GET',
             qs: {list: true},
@@ -493,12 +493,12 @@ const vaultTreeTestCase = {
             },
             body: void(0),
             json: true,
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {data: {keys: []}},
         }, {
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/secrets/foo/bar/qux/',
             method: 'GET',
             qs: {list: true},
@@ -507,7 +507,7 @@ const vaultTreeTestCase = {
             },
             body: void(0),
             json: true,
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {data: {keys: ['bax']}},
@@ -526,6 +526,61 @@ const vaultTreeTestCase = {
           }
         },
         'baz/': {}
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const slackInputFormTestCase = {
+  name: 'slack form input requests test case',
+  dataDependencies: {
+    slack: {
+      accessSchema: {
+        dataSource: 'GENERIC_API',
+        host: 'slack.com',
+        path: '/api/conversations.list',
+        formParamKeys: ['token'],
+        bodyParamKeys: []
+      },
+      params: {
+        token : {value: 'secrettoken'},
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'slack',
+    preCache: {},
+    preInputs: {},
+    inputs: {},
+    postInputs: {},
+    mocks: {
+      slack: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://slack.com/api/conversations.list',
+            headers: {},
+            qs: {},
+            body: void(0),
+            json: true,
+            method: 'GET',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {channels: [1, 2]},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      slack: [{
+        body: {channels: [1, 2]},
+        statusCode: 200,
+        headers: void(0)
       }],
     },
     postCache: {},
@@ -570,7 +625,7 @@ const elasticsearchInputNoDefaultTestCase = {
       elasticsearch: {
         source: 'GENERIC_API',
         sourceConfig: [{
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/_search',
             headers: {},
             qs: {apikey: 'secretApiKey'},
@@ -579,7 +634,7 @@ const elasticsearchInputNoDefaultTestCase = {
             },
             json: true,
             method: 'POST',
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
@@ -638,7 +693,7 @@ const elasticsearchErrorTestCase = {
         source: 'GENERIC_API',
         sourceConfig: [
           {
-            callParameters: [{
+            callParameters: {
               url: 'https://www.example.com/_search',
               headers: {},
               qs: {apikey: 'secretApiKey'},
@@ -647,13 +702,13 @@ const elasticsearchErrorTestCase = {
               },
               json: true,
               method: 'POST',
-            }],
+            },
             error: "bad error",
             response: {statusCode: 400},
             body: null,
           },
           {
-            callParameters: [{
+            callParameters: {
               url: 'https://www.example.com/_search',
               headers: {},
               qs: {apikey: 'secretApiKey'},
@@ -662,7 +717,7 @@ const elasticsearchErrorTestCase = {
               },
               json: true,
               method: 'POST',
-            }],
+            },
             error: null,
             response: {statusCode: 200},
             body: {hits: {hits: ['bar', 'baz']}},
@@ -715,7 +770,7 @@ const elasticsearchErrorDefaultTestCase = {
         source: 'GENERIC_API',
         sourceConfig: [
           {
-            callParameters: [{
+            callParameters: {
               url: 'https://www.example.com/_search',
               headers: {},
               qs: {apikey: 'secretApiKey'},
@@ -724,7 +779,7 @@ const elasticsearchErrorDefaultTestCase = {
               },
               json: true,
               method: 'POST',
-            }],
+            },
             error: "bad error",
             response: {statusCode: 400},
             body: null,
@@ -780,7 +835,7 @@ const elasticsearchInputTestCase = {
       elasticsearch: {
         source: 'GENERIC_API',
         sourceConfig: [{
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/_search',
             headers: {},
             qs: {apikey: 'secretApiKey'},
@@ -789,7 +844,7 @@ const elasticsearchInputTestCase = {
             },
             json: true,
             method: 'POST',
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {hits: {hits: ['bar', 'baz']}},
@@ -821,7 +876,7 @@ const elasticsearchInputTestCase = {
       elasticsearch: {
         source: 'GENERIC_API',
         sourceConfig: [{
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/_search',
             headers: {},
             qs: {apikey: 'secretApiKey'},
@@ -830,7 +885,7 @@ const elasticsearchInputTestCase = {
             },
             json: true,
             method: 'POST',
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {hits: {hits: ['qux', 'quux']}},
@@ -864,7 +919,7 @@ const elasticsearchInputTestCase = {
       elasticsearch: {
         source: 'GENERIC_API',
         sourceConfig: [{
-          callParameters: [{
+          callParameters: {
             url: 'https://www.example.com/_search',
             headers: {},
             qs: {apikey: 'secretApiKey'},
@@ -873,7 +928,7 @@ const elasticsearchInputTestCase = {
             },
             json: true,
             method: 'POST',
-          }],
+          },
           error: null,
           response: {statusCode: 200},
           body: {hits: {hits: ['foo']}},
@@ -1323,6 +1378,7 @@ const cachingTestCases = [
   elasticsearchErrorTestCase,
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
+  slackInputFormTestCase,
   vaultTreeTestCase,
   awsCachingTargetingTestCase,
   awsExpiringCacheTestCase,

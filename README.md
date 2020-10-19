@@ -294,7 +294,7 @@ parameter are treated specially by the `GENERIC_API` `recordCollector`:
 `apiConfig.queryParamKeys`: If provided, will be concatenated with the sourceSchema's 
                             `queryParamKeys` array described above.
 
-`apiConfig.headerParamKeys`: If prsovided, will be concatenated with the sourceSchema's 
+`apiConfig.headerParamKeys`: If provided, will be concatenated with the sourceSchema's 
                              `headerParamKeys` array described above.
 
 `apiConfig.bodyParamKeys`: If provided, will be concatenated with the sourceSchema's `bodyParamKeys`
@@ -565,7 +565,12 @@ performs the transformation.
 
 ### AccessSchema Object Extensions for Generic Request-Based APIs
 
-For many common APIs it is simpler to just use https://github.com/request/request[request js] 
+NOTE: In October 2020, I replaced the venerable and sadly deprecated [request](https://github.com/request/request)
+library with [needle](https://github.com/tomas/needle) in the handler for `GENERIC_API` access schemas.
+Needle looks like a very comparable replacement (and the exploranda API did not change), but there may be some bugs until I have a chance
+to work through all the edge cases. The 0.3.0 release marks the introduction of needle and removal of request.
+
+For many common APIs it is simpler to just use [needle](https://github.com/tomas/needle)
 as the base SDK and build accessSchema objects to provide a natural pattern
 for interacting with the resources and access methods exposed by the API.
 
