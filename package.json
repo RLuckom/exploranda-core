@@ -1,6 +1,6 @@
 {
   "name": "exploranda-core",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "exploranda data access components",
   "main": "index.js",
   "scripts": {
@@ -19,17 +19,23 @@
   "homepage": "https://github.com/rluckom/exploranda-core",
   "dependencies": {
     "async": "^2.6.3",
+    "lodash": "^4.17.20"
+  },
+  "peerDependencies": {
     "aws-sdk": "^2.764.0",
-    "googleapis": "^60.0.1",
-    "lodash": "^4.17.20",
-    "moment": "^2.29.0",
     "needle": "^2.5.2",
     "parse-link-header": "^1.0.1",
+    "googleapis": "^60.0.1",
     "qs": "^6.9.4",
     "sharp": "^0.26.1"
   },
   "devDependencies": {
+    "aws-sdk": "^2.775.0",
     "jasmine": "^3.6.1",
+    "moment": "^2.29.1",
+    "needle": "^2.5.2",
+    "parse-link-header": "^1.0.1",
+    "qs": "^6.9.4",
     "rewire": "^4.0.1"
   }
 }

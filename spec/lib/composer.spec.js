@@ -2,23 +2,14 @@ const _ = require('lodash');
 const {kinesisStreams, kinesisStream, kinesisStreamMetrics} = require('../../lib/dataSources/aws/kinesis');
 const {awsMock} = require('../awsMock');
 const {requestMock} = require('../requestMock');
-const rewire = require('rewire');
-const awsRecordCollector = rewire('../../lib/recordCollectors/awsRecordCollector');
-const genericApiRecordCollector = rewire('../../lib/recordCollectors/genericApiRecordCollector');
-const composer = rewire('../../lib/gopher.js');
+const genericApiRecordCollector = require('../../lib/recordCollectors/genericApiRecordCollector');
+const { Gopher } = require('../../lib/gopher.js');
 
-const {lookUpRecords} = awsRecordCollector;
 const genericApiLookupRecords = genericApiRecordCollector.lookUpRecords;
-const {Gopher} = composer;
 
 function executeBasicTestSuite(suiteName, testCases) {
   describe(suiteName, function() {
     let awsMockBuilder, mockBuilders, oldExecRecordRequest, oldRequestRequest, oldVaultRequest;
-
-    beforeEach(function() {
-      oldExecRecordRequest = awsRecordCollector.__get__('AWS');
-      oldVaultRequest = genericApiRecordCollector.__get__('needle.request');
-    });
 
     function buildMocks() {
       awsMockBuilder = awsMock();
@@ -30,22 +21,12 @@ function executeBasicTestSuite(suiteName, testCases) {
         SYNTHETIC: {registerExpectation: _.noop, verifyExpectations: _.noop},
       };
     }
+    let resetAws, resetNeedle
 
-    function setMocks() {
-      awsRecordCollector.__set__('AWS', awsMockBuilder.getMock());
-      genericApiRecordCollector.__set__('needle.request', genericApiMockBuilder.getMock());
-      oldRecordCollectors = composer.__get__('recordCollectors');
-      composer.__set__('recordCollectors', {
-        AWS: lookUpRecords,
-        GENERIC_API: genericApiLookupRecords,
-        SYNTHETIC: oldRecordCollectors.SYNTHETIC
-      });
+    function setMocks(gopher) {
+      resetAws = gopher.recordCollectors.AWS.replaceDependency('AWS', awsMockBuilder.getMock());
+      resetNeedle = gopher.recordCollectors.GENERIC_API.replaceDependency('needle', {request: genericApiMockBuilder.getMock()});
     }
-
-    afterEach(function() {
-      awsRecordCollector.__set__('AWS', oldExecRecordRequest);
-      composer.__set__('recordCollectors', oldRecordCollectors);
-    });
 
     _.each(testCases, function({name, dataDependencies, namedMocks, implicitMocks}) {
       it(name, function(done) {
@@ -65,8 +46,9 @@ function executeBasicTestSuite(suiteName, testCases) {
         _.each(implicitMocks, (mockSchema) => {
           register(mockSchema);
         });
-        setMocks();
-        new Gopher(dataDependencies).report((err, response) => {
+        const gopher = Gopher(dataDependencies)
+        setMocks(gopher);
+        gopher.report((err, response) => {
           expect(response).toEqual(expectedResult);
           _.each(mockBuilders, (mb) => {
             mb.verifyExpectations();
@@ -82,11 +64,6 @@ function executeCachingTestSuite(suiteName, testCases) {
   describe(suiteName, function() {
     let awsMockBuilder, mockBuilders, oldExecRecordRequest, oldRequestRequest, oldVaultRequest;
 
-    beforeEach(function() {
-      oldExecRecordRequest = awsRecordCollector.__get__('AWS');
-      oldVaultRequest = genericApiRecordCollector.__get__('needle.request');
-    });
-
     function buildMocks() {
       awsMockBuilder = awsMock();
       requestMockBuilder = requestMock();
@@ -96,21 +73,13 @@ function executeCachingTestSuite(suiteName, testCases) {
         GENERIC_API: genericApiMockBuilder,
       };
     }
+    let resetAws, resetNeedle
 
-    function setMocks() {
-      awsRecordCollector.__set__('AWS', awsMockBuilder.getMock());
-      genericApiRecordCollector.__set__('needle.request', genericApiMockBuilder.getMock());
-      oldRecordCollectors = composer.__get__('recordCollectors');
-      composer.__set__('recordCollectors', {
-        AWS: lookUpRecords,
-        GENERIC_API: genericApiLookupRecords,
-      });
+
+    function setMocks(gopher) {
+      resetAws = gopher.recordCollectors.AWS.replaceDependency('AWS', awsMockBuilder.getMock());
+      resetNeedle = gopher.recordCollectors.GENERIC_API.replaceDependency('needle', {request: genericApiMockBuilder.getMock()});
     }
-
-    afterEach(function() {
-      awsRecordCollector.__set__('AWS', oldExecRecordRequest);
-      composer.__set__('recordCollectors', oldRecordCollectors);
-    });
 
     function compareCache(gopherCache, expectedCache) {
       expect(_.keys(gopherCache).length).toEqual(_.keys(expectedCache).length, 'different number of cache keys');
@@ -142,7 +111,7 @@ function executeCachingTestSuite(suiteName, testCases) {
             _.each(mocks, (mockSchema, name) => {
               register(mockSchema);
             });
-            setMocks();
+            setMocks(gopher);
             if (preCache) {
               compareCache(gopher.getCache(), preCache);
             }

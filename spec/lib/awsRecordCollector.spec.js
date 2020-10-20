@@ -106,6 +106,7 @@ describe('lookupRecords', function() {
     executed.push(args);
     execCallback = args[args.length - 1];
   }
+  let replaceExecRecord
 
   beforeEach(function() {
     executed = [];
@@ -115,12 +116,11 @@ describe('lookupRecords', function() {
     process.env.AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
     process.env.AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
     process.env.AWS_SESSION_TOKEN = "AWS_SESSION_TOKEN";
-    oldExecRecordRequest = awsRecordCollector.__get__('AWS');
-    awsRecordCollector.__set__('AWS', AWS);
+    replaceExecRecord = lookUpRecords.replaceDependency('AWS', AWS);
   });
 
   afterEach(function() {
-    awsRecordCollector.__set__('AWS', oldExecRecordRequest);
+    replaceExecRecord()
   });
 
   const kinesisStreamNames = {StreamNames: ['s1', 's2', 's3']};

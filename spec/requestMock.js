@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const { addQueryStringToUrl } = require('../lib/recordCollectors/genericApiRecordCollector.js')
+const qs = require('qs')
+const addQueryStringToUrl = _.partial(require('../lib/recordCollectors/genericApiRecordCollector.js').addQueryStringToUrl, qs)
 
 function makeNeedleParams(consolidatedParameters) {
   const configOnlyParams = _.cloneDeep(consolidatedParameters)

@@ -1,6 +1,3 @@
-
-!["Build Status"](https://travis-ci.com/RLuckom/exploranda-core.svg?branch=master)
-
 ## Introduction
 
 Exploranda is a powerful, flexible, and efficient nodejs library for fetching and
@@ -31,9 +28,6 @@ I use exploranda:
 * To perform one-time or throwaway analysis tasks too complex for `curl` plus `jq`
 * To explore new APIs
 * To "test drive" monitoring ideas before investing the effort of integrating them into existing systems.
-
-Exploranda is not designed for use cases that require modifying data in APIs
-(such as PUT requests and many POST requests, etc.).
 
 To get started creating a report, see the [Getting Started](docs/getting-started.md)
 doc.
@@ -99,6 +93,23 @@ function that builds a full-featured `recordCollector` object when given a `getA
 function as an argument; see the [`awsRecordCollector`](lib/awsRecordCollector.js),
 [`gcpRecordCollector`](lib/gcpRecordCollector.js) and [`genericApiRecordCollector`](lib/genericApiRecordCollector.js)
 for examples.
+
+As of version 0.4.0 (October 2020), exploranda-core does not install peer dependencies needed
+to use the record collectors--instead, you must install these yourself. This helps keep the package
+size smaller in the common case where a caller doesn't need every type of record collector, and facilitates
+mixing and matching dependencies in different function layers when using cloud functions.
+
+The AWS recordcollector requires 'aws-sdk'
+
+The google recordcollecttor requires 'googleapis'
+
+The sharp recodcollector requires 'sharp'
+
+The generic api recordcollector requires 'needle', 'qs', and 'parse-link-header'
+
+RecordCollectors can be added by assigning the output of `exploranda.buildSDKCollector`
+to the `Gopher(dependencies).recordcollectors` object. The key
+should be the value you intend to use as the `dataSource`.
 
 ### 4. The `Gopher` object
 The `Gopher` object contains the logic for reading a graph of dependency
