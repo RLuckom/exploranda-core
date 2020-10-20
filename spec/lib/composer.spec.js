@@ -17,7 +17,7 @@ function executeBasicTestSuite(suiteName, testCases) {
 
     beforeEach(function() {
       oldExecRecordRequest = awsRecordCollector.__get__('AWS');
-      oldVaultRequest = genericApiRecordCollector.__get__('needle');
+      oldVaultRequest = genericApiRecordCollector.__get__('needle.request');
     });
 
     function buildMocks() {
@@ -33,7 +33,7 @@ function executeBasicTestSuite(suiteName, testCases) {
 
     function setMocks() {
       awsRecordCollector.__set__('AWS', awsMockBuilder.getMock());
-      genericApiRecordCollector.__set__('needle', genericApiMockBuilder.getMock());
+      genericApiRecordCollector.__set__('needle.request', genericApiMockBuilder.getMock());
       oldRecordCollectors = composer.__get__('recordCollectors');
       composer.__set__('recordCollectors', {
         AWS: lookUpRecords,
@@ -84,7 +84,7 @@ function executeCachingTestSuite(suiteName, testCases) {
 
     beforeEach(function() {
       oldExecRecordRequest = awsRecordCollector.__get__('AWS');
-      oldVaultRequest = genericApiRecordCollector.__get__('needle');
+      oldVaultRequest = genericApiRecordCollector.__get__('needle.request');
     });
 
     function buildMocks() {
@@ -99,7 +99,7 @@ function executeCachingTestSuite(suiteName, testCases) {
 
     function setMocks() {
       awsRecordCollector.__set__('AWS', awsMockBuilder.getMock());
-      genericApiRecordCollector.__set__('needle', genericApiMockBuilder.getMock());
+      genericApiRecordCollector.__set__('needle.request', genericApiMockBuilder.getMock());
       oldRecordCollectors = composer.__get__('recordCollectors');
       composer.__set__('recordCollectors', {
         AWS: lookUpRecords,
