@@ -537,7 +537,7 @@ const vaultTreeTestCase = {
   ]
 };
 
-const slackInputFormTestCase = {
+const slackInputTestCase = {
   name: 'slack form input requests test case',
   dataDependencies: {
     slack: {
@@ -585,6 +585,148 @@ const slackInputFormTestCase = {
     expectedValues: {
       slack: [{
         body: {channels: [1, 2]},
+        statusCode: 200,
+        headers: void(0)
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const slackInputErrorHandlerInAccessSchemaTestCase = {
+  name: 'slack form input requests test case',
+  dataDependencies: {
+    slack: {
+      accessSchema: {
+        onError: () => {
+          return {
+            res: {
+              body: {
+                text: 'nvm it\'s fine'
+              },
+              statusCode: 200,
+              headers: void(0)
+            }
+          }
+        },
+        dataSource: 'GENERIC_API',
+        host: 'slack.com',
+        path: '/api/conversations.list',
+        formParamKeys: ['token'],
+        bodyParamKeys: [],
+        multipart: true,
+      },
+      params: {
+        token : {value: 'secrettoken'},
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'slack',
+    preCache: {},
+    preInputs: {},
+    inputs: {},
+    postInputs: {},
+    mocks: {
+      slack: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://slack.com/api/conversations.list',
+            headers: {},
+            qs: {},
+            body: void(0),
+            json: true,
+            multipart: true,
+            method: 'GET',
+          },
+          error: { text: 'you forgot The Thing' },
+          response: {statusCode: 404},
+          body: {channels: [1, 2]},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      slack: [{
+        body: {
+          text: 'nvm it\'s fine'
+        },
+        statusCode: 200,
+        headers: void(0)
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const slackInputErrorHandlerInDependencySchemaTestCase = {
+  name: 'slack form input requests test case',
+  dataDependencies: {
+    slack: {
+      accessSchema: {
+        dataSource: 'GENERIC_API',
+        host: 'slack.com',
+        path: '/api/conversations.list',
+        formParamKeys: ['token'],
+        bodyParamKeys: [],
+        multipart: true,
+      },
+      behaviors: {
+        onError: () => {
+          return {
+            res: {
+              body: {
+                text: 'nvm it\'s fine'
+              },
+              statusCode: 200,
+              headers: void(0)
+            }
+          }
+        },
+      },
+      params: {
+        token : {value: 'secrettoken'},
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'slack',
+    preCache: {},
+    preInputs: {},
+    inputs: {},
+    postInputs: {},
+    mocks: {
+      slack: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://slack.com/api/conversations.list',
+            headers: {},
+            qs: {},
+            body: void(0),
+            json: true,
+            multipart: true,
+            method: 'GET',
+          },
+          error: { text: 'you forgot The Thing' },
+          response: {statusCode: 404},
+          body: {channels: [1, 2]},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      slack: [{
+        body: {
+          text: 'nvm it\'s fine'
+        },
         statusCode: 200,
         headers: void(0)
       }],
@@ -1391,7 +1533,9 @@ const cachingTestCases = [
   elasticsearchErrorTestCase,
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
-  slackInputFormTestCase,
+  slackInputTestCase,
+  slackInputErrorHandlerInAccessSchemaTestCase,
+  slackInputErrorHandlerInDependencySchemaTestCase,
   vaultTreeTestCase,
   awsCachingTargetingTestCase,
   awsExpiringCacheTestCase,
