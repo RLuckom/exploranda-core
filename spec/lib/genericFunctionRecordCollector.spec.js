@@ -145,9 +145,9 @@ describe('genericFunctionRecordCollector', () => {
       dataSource: exampleDataSource,
       isSync: true,
       namespaceDetails: {
-        name: 'fake.constructableSyncParamDependency'
+        name: 'fake.constructableSyncParamDependency',
+        initialize: true,
       },
-      initializeNamespace: true,
       apiMethod: {
         name: 'returnedMethod'
       },
@@ -181,9 +181,9 @@ describe('genericFunctionRecordCollector', () => {
       dataSource: exampleDataSource,
       isSync: true,
       namespaceDetails: {
-        name: 'fake.constructableNewSyncParamDependency'
+        name: 'fake.constructableNewSyncParamDependency',
+        initialize: { useNew: true },
       },
-      initializeNamespace: { useNew: true },
       apiMethod: {
         name: 'returnedMethod'
       },
@@ -217,11 +217,11 @@ describe('genericFunctionRecordCollector', () => {
       dataSource: exampleDataSource,
       isSync: true,
       namespaceDetails: {
-        name: 'fake.constructableNewArgOrderNoArgSyncParamDependency'
-      },
-      initializeNamespace: { 
-        useNew: true ,
-        argumentOrder: []
+        name: 'fake.constructableNewArgOrderNoArgSyncParamDependency',
+        initialize: { 
+          useNew: true ,
+          argumentOrder: []
+        },
       },
       apiMethod: {
         name: 'returnedMethod'
@@ -257,9 +257,9 @@ describe('genericFunctionRecordCollector', () => {
       isSync: true,
       namespaceDetails: {
         name: 'fake.constructableArgOrderSyncParamDependency',
-      },
-      initializeNamespace: { 
-        argumentOrder: ['foo', 'bar'],
+        initialize: { 
+          argumentOrder: ['foo', 'bar'],
+        },
       },
       apiMethod: {
         name: 'returnedMethod'
