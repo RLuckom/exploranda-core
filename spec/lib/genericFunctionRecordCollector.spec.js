@@ -211,4 +211,84 @@ describe('genericFunctionRecordCollector', () => {
       done()
     })
   })
+
+  it('can do constructed sync param using new with arg order and no args', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      isSync: true,
+      namespaceDetails: {
+        name: 'fake.constructableNewArgOrderNoArgSyncParamDependency'
+      },
+      initializeNamespace: { 
+        useNew: true ,
+        argumentOrder: []
+      },
+      apiMethod: {
+        name: 'returnedMethod'
+      },
+      requiredParams: {
+        arg1: {},
+        arg2: {},
+        apiConfig: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: {foo: 'bar'}},
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do constructed sync param with arg order', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      isSync: true,
+      namespaceDetails: {
+        name: 'fake.constructableArgOrderSyncParamDependency',
+      },
+      initializeNamespace: { 
+        argumentOrder: ['foo', 'bar'],
+      },
+      apiMethod: {
+        name: 'returnedMethod'
+      },
+      requiredParams: {
+        arg1: {},
+        arg2: {},
+        apiConfig: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: {
+            foo: 'bar',
+            bar: 'baz',
+          }},
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
 })

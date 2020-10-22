@@ -29,8 +29,21 @@ function constructableSyncParamDependency(constructorArgs) {
   }
 }
 
+function constructableArgOrderSyncParamDependency(foo, bar) {
+  expect(foo).toEqual('bar')
+  expect(bar).toEqual('baz')
+  return {
+    returnedMethod: syncParamDependency
+  }
+}
+
 function constructableNewSyncParamDependency(constructorArgs) {
   expect(constructorArgs.foo).toEqual('bar')
+  this.returnedMethod = syncParamDependency
+}
+
+function constructableNewArgOrderNoArgSyncParamDependency(...args) {
+  expect(args.length).toEqual(0)
   this.returnedMethod = syncParamDependency
 }
 
@@ -41,4 +54,6 @@ module.exports = {
   syncParamDependency,
   constructableSyncParamDependency,
   constructableNewSyncParamDependency,
+  constructableNewArgOrderNoArgSyncParamDependency,
+  constructableArgOrderSyncParamDependency,
 }
