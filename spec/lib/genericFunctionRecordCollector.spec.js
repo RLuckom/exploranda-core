@@ -175,4 +175,40 @@ describe('genericFunctionRecordCollector', () => {
       done()
     })
   })
+
+  it('can do constructed sync param using new', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      isSync: true,
+      namespaceDetails: {
+        name: 'fake.constructableNewSyncParamDependency'
+      },
+      initializeNamespace: { useNew: true },
+      apiMethod: {
+        name: 'returnedMethod'
+      },
+      requiredParams: {
+        arg1: {},
+        arg2: {},
+        apiConfig: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: {foo: 'bar'}},
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
 })
