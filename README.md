@@ -507,9 +507,13 @@ SDK where the apiMethod specified is found. It has two fields:
 
 `name` (String, required) : the exact SDK namespace, e.g. `'EC2'` for AWS or `compute` for GCP.
 
-`constructorArgs` (Object, required) : defaults to pass to the namespace constructor.
+`constructorArgs` (Object) : defaults to pass to the namespace constructor.
 Right now this almost always includes `region: 'us-east-1'`, but this will change
 as the region will need to be configurable. The API version can also be specified.
+
+`isTarget` (boolean) : If this is set, the resover will treat the _api_ object, not the results
+ of calls to it, as the object to return. It should only be used for the (currently-experimental)
+`genericFunctionRecordCollector` accessSchemas.
 
 #### The `value` field
 

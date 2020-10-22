@@ -29,6 +29,20 @@ function constructableSyncParamDependency(constructorArgs) {
   }
 }
 
+function constructableSyncParamDependencyNamespaceTarget(constructorArgs) {
+  expect(constructorArgs.foo).toEqual('bar')
+  let calls = 0
+  const returnedMethod = function syncParamDependency(params) {
+      expect(params.arg1).toEqual('foo')
+      expect(params.arg2).toEqual('bar')
+      calls += 1
+      return calls
+    }
+  return {
+    returnedMethod
+  }
+}
+
 function constructableArgOrderSyncParamDependency(foo, bar) {
   expect(foo).toEqual('bar')
   expect(bar).toEqual('baz')
@@ -56,4 +70,5 @@ module.exports = {
   constructableNewSyncParamDependency,
   constructableNewArgOrderNoArgSyncParamDependency,
   constructableArgOrderSyncParamDependency,
+  constructableSyncParamDependencyNamespaceTarget,
 }
