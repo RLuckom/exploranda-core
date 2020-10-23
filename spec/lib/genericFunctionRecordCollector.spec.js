@@ -41,6 +41,70 @@ describe('genericFunctionRecordCollector', () => {
     })
   })
 
+  it('can do param-driven async arg order', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        paramDriven: true
+      },
+      argumentOrder: ['foo', 'bar'],
+      requiredParams: {
+        apiConfig: {},
+        foo: {},
+        bar: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: require('../exampleDependency').asyncArgOrderDependency },
+          foo: { value: ['foo', 'foo'] },
+          bar: { value: ['bar', 'bar'] },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep).toEqual(['baz', 'baz'])
+      done()
+    })
+  })
+
+  it('can do param-driven async param parallel', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        paramDriven: true,
+        parallel: true,
+      },
+      requiredParams: {
+        apiConfig: {},
+        arg1: {},
+        arg2: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: require('../exampleDependency').asyncParamDependency },
+          arg1: { value: ['foo', 'foo'] },
+          arg2: { value: ['bar', 'bar'] },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep).toEqual(['baz', 'baz'])
+      done()
+    })
+  })
+
   it('can do async param', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
@@ -133,6 +197,38 @@ describe('genericFunctionRecordCollector', () => {
     }
     const gopher = Gopher(dependencies)
     gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do param-driven sync param', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      isSync: true,
+      namespaceDetails: {
+        paramDriven: true
+      },
+      requiredParams: {
+        arg1: {},
+        arg2: {},
+        apiConfig: {},
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: require('../exampleDependency').syncParamDependency },
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
     gopher.report((e, r) => {
       expect(e).toBeFalsy()
       expect(r.testDep[0]).toEqual('baz')
