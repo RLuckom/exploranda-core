@@ -12,6 +12,7 @@ describe('genericFunctionRecordCollector', () => {
     const accessSchema = {
       dataSource: exampleDataSource,
       namespaceDetails: {
+        isSync: true, // this validates that the nsdetails isSync doesn't trigger method sync
         name: 'fake'
       },
       apiMethod: {
@@ -151,8 +152,8 @@ describe('genericFunctionRecordCollector', () => {
       namespaceDetails: {
         name: 'fake'
       },
-      isSync: true,
       apiMethod: {
+        isSync: true,
         name: 'syncArgOrderDependency'
       },
       argumentOrder: ['foo', 'bar'],
@@ -182,11 +183,11 @@ describe('genericFunctionRecordCollector', () => {
   it('can do sync param', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake'
       },
       apiMethod: {
+        isSync: true,
         name: 'syncParamDependency'
       },
       requiredParams: {
@@ -215,8 +216,8 @@ describe('genericFunctionRecordCollector', () => {
   it('can do param-driven sync param', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
+        isSync: true,
         paramDriven: true
       },
       requiredParams: {
@@ -242,7 +243,6 @@ describe('genericFunctionRecordCollector', () => {
     const gopher = Gopher(dependencies)
     gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
     gopher.report((e, r) => {
-      console.log(e)
       expect(e).toBeFalsy()
       expect(r.testDep[0]).toEqual('baz')
       done()
@@ -253,9 +253,9 @@ describe('genericFunctionRecordCollector', () => {
     const accessSchema = {
       dataSource: exampleDataSource,
       namespaceDetails: {
+        isSync: true,
         paramDriven:  true
       },
-      isSync: true,
       requiredParams: {
         apiConfig: {},
         foo: {},
@@ -268,8 +268,49 @@ describe('genericFunctionRecordCollector', () => {
         params: {
           apiConfig: {
             value: {
-          argumentOrder: ['foo', 'bar'],
-          apiObject: require('../exampleDependency').syncArgOrderDependency,
+              argumentOrder: ['foo', 'bar'],
+              apiObject: require('../exampleDependency'),
+              apiMethod: 'syncArgOrderDependency',
+            }
+          },
+          foo: { value: 'foo' },
+          bar: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do param-driven sync param with argorder on the param', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        paramDriven:  true
+      },
+      apiMethod: {
+        isSync: true,
+        name:  'syncArgOrderDependency',
+      },
+      requiredParams: {
+        apiConfig: {},
+        foo: {},
+        bar: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {
+            value: {
+              argumentOrder: ['foo', 'bar'],
+              apiObject: require('../exampleDependency'),
             }
           },
           foo: { value: 'foo' },
@@ -326,12 +367,12 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param with multiple arge', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake.constructableSyncParamDependencyNamespaceTarget',
         initialize: true,
       },
       apiMethod: {
+        isSync: true,
         name: 'returnedMethod'
       },
       requiredParams: {
@@ -362,8 +403,8 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param and return the api', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
+        isSync: true,
         name: 'fake.constructableSyncParamDependencyNamespaceTarget',
         initialize: true,
       },
@@ -391,12 +432,12 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake.constructableSyncParamDependency',
         initialize: true,
       },
       apiMethod: {
+        isSync: true,
         name: 'returnedMethod'
       },
       requiredParams: {
@@ -427,12 +468,12 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param using new', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake.constructableNewSyncParamDependency',
         initialize: { useNew: true },
       },
       apiMethod: {
+        isSync: true,
         name: 'returnedMethod'
       },
       requiredParams: {
@@ -463,7 +504,6 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param using new with arg order and no args', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake.constructableNewArgOrderNoArgSyncParamDependency',
         initialize: { 
@@ -472,6 +512,7 @@ describe('genericFunctionRecordCollector', () => {
         },
       },
       apiMethod: {
+        isSync: true,
         name: 'returnedMethod'
       },
       requiredParams: {
@@ -502,7 +543,6 @@ describe('genericFunctionRecordCollector', () => {
   it('can do constructed sync param with arg order', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
-      isSync: true,
       namespaceDetails: {
         name: 'fake.constructableArgOrderSyncParamDependency',
         initialize: { 
@@ -510,6 +550,7 @@ describe('genericFunctionRecordCollector', () => {
         },
       },
       apiMethod: {
+        isSync: true,
         name: 'returnedMethod'
       },
       requiredParams: {
