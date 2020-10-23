@@ -442,7 +442,7 @@ and exactly `'GOOGLE'` for GCP AccessSchemas.
 
 `name` (required) : A name expressing the data source, used in error messages
 
-`apiMethod` (required) : the API method whose interface this accessSchema describes.
+`apiMethod` (required, except in experimental cases, see 'paramDriven') : the API method whose interface this accessSchema describes.
 This field differs between the AWS and GCP AccessSchemas. For AWS, it is the string
 name of the method on the relevand SDK object. For GCP, it is an array with the
 parts of the API namespace after the first. For instance, the apiMethod
@@ -511,8 +511,8 @@ SDK where the apiMethod specified is found. It has two fields:
 Right now this almost always includes `region: 'us-east-1'`, but this will change
 as the region will need to be configurable. The API version can also be specified.
 
-`isTarget` (boolean) : If this is set, the resover will treat the _api_ object, not the results
- of calls to it, as the object to return. It should only be used for the (currently-experimental)
+`paramDriven` (boolean, experimental / insufficiently documented) : If this is set, the apiConfig
+param will be used to fulfill the request. It should only be used for the (currently-experimental)
 `genericFunctionRecordCollector` accessSchemas.
 
 #### The `value` field

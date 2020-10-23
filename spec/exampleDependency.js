@@ -30,6 +30,7 @@ function constructableSyncParamDependency(constructorArgs) {
 }
 
 function constructableSyncParamDependencyNamespaceTarget(constructorArgs) {
+  console.log('called')
   expect(constructorArgs.foo).toEqual('bar')
   let calls = 0
   const returnedMethod = function syncParamDependency(params) {

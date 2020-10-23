@@ -58,7 +58,11 @@ describe('genericFunctionRecordCollector', () => {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: require('../exampleDependency').asyncArgOrderDependency },
+          apiConfig: {
+            value: {
+              apiObject: require('../exampleDependency').asyncArgOrderDependency 
+            }
+          },
           foo: { value: ['foo', 'foo'] },
           bar: { value: ['bar', 'bar'] },
         }
@@ -90,7 +94,11 @@ describe('genericFunctionRecordCollector', () => {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: require('../exampleDependency').asyncParamDependency },
+          apiConfig: {
+            value: {
+              apiObject: require('../exampleDependency').asyncParamDependency 
+            },
+          },
           arg1: { value: ['foo', 'foo'] },
           arg2: { value: ['bar', 'bar'] },
         }
@@ -221,7 +229,11 @@ describe('genericFunctionRecordCollector', () => {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: require('../exampleDependency').syncParamDependency },
+          apiConfig: {
+            value: {
+              apiObject: require('../exampleDependency').syncParamDependency 
+            },
+          },
           arg1: { value: 'foo' },
           arg2: { value: 'bar' },
         }
@@ -230,20 +242,94 @@ describe('genericFunctionRecordCollector', () => {
     const gopher = Gopher(dependencies)
     gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
     gopher.report((e, r) => {
+      console.log(e)
       expect(e).toBeFalsy()
       expect(r.testDep[0]).toEqual('baz')
       done()
     })
   })
 
-  it('can do constructed sync param and return the api', (done) => {
+  it('can do param-driven sync param with argorder on the param', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        paramDriven:  true
+      },
+      isSync: true,
+      requiredParams: {
+        apiConfig: {},
+        foo: {},
+        bar: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {
+            value: {
+          argumentOrder: ['foo', 'bar'],
+          apiObject: require('../exampleDependency').syncArgOrderDependency,
+            }
+          },
+          foo: { value: 'foo' },
+          bar: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do param-driven sync param with syncstatus on apiconf', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        paramDriven: true
+      },
+      requiredParams: {
+        arg1: {},
+        arg2: {},
+        apiConfig: {},
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {
+            value: {
+              isSync: true,
+              apiObject: require('../exampleDependency').syncParamDependency 
+            },
+          },
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
+    gopher.report((e, r) => {
+      console.log(e)
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do constructed sync param with multiple arge', (done) => {
     const accessSchema = {
       dataSource: exampleDataSource,
       isSync: true,
       namespaceDetails: {
         name: 'fake.constructableSyncParamDependencyNamespaceTarget',
         initialize: true,
-        isTarget: true,
       },
       apiMethod: {
         name: 'returnedMethod'
@@ -268,7 +354,36 @@ describe('genericFunctionRecordCollector', () => {
     gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
     gopher.report((e, r) => {
       expect(e).toBeFalsy()
-      expect(r.testDep({arg1: 'foo', arg2: 'bar'})).toEqual(3)
+      expect(r.testDep).toEqual([1, 1])
+      done()
+    })
+  })
+
+  it('can do constructed sync param and return the api', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      isSync: true,
+      namespaceDetails: {
+        name: 'fake.constructableSyncParamDependencyNamespaceTarget',
+        initialize: true,
+      },
+      requiredParams: {
+        apiConfig: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {value: {foo: 'bar'}},
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0].apiObject.returnedMethod({arg1: 'foo', arg2: 'bar'})).toEqual(1)
       done()
     })
   })
