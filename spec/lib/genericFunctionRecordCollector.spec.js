@@ -378,14 +378,14 @@ describe('genericFunctionRecordCollector', () => {
       requiredParams: {
         arg1: {},
         arg2: {},
-        apiConfig: {}
+        foo: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {foo: 'bar'}},
+          foo: {value:  'bar'},
           arg1: { value: ['foo', 'foo'] },
           arg2: { value: ['bar', 'bar'] },
         }
@@ -409,14 +409,14 @@ describe('genericFunctionRecordCollector', () => {
         initialize: true,
       },
       requiredParams: {
-        apiConfig: {}
+        foo: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {foo: 'bar'}},
+          foo: {value:  'bar'},
         }
       }
     }
@@ -443,14 +443,14 @@ describe('genericFunctionRecordCollector', () => {
       requiredParams: {
         arg1: {},
         arg2: {},
-        apiConfig: {}
+        foo: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {foo: 'bar'}},
+          foo: {value:  'bar'},
           arg1: { value: 'foo' },
           arg2: { value: 'bar' },
         }
@@ -479,14 +479,14 @@ describe('genericFunctionRecordCollector', () => {
       requiredParams: {
         arg1: {},
         arg2: {},
-        apiConfig: {}
+        foo: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {foo: 'bar'}},
+          foo: {value:  'bar'},
           arg1: { value: 'foo' },
           arg2: { value: 'bar' },
         }
@@ -518,14 +518,14 @@ describe('genericFunctionRecordCollector', () => {
       requiredParams: {
         arg1: {},
         arg2: {},
-        apiConfig: {}
+        foo: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {foo: 'bar'}},
+          foo: {value:  'bar'},
           arg1: { value: 'foo' },
           arg2: { value: 'bar' },
         }
@@ -554,19 +554,18 @@ describe('genericFunctionRecordCollector', () => {
         name: 'returnedMethod'
       },
       requiredParams: {
+        foo: {},
+        bar: {},
         arg1: {},
         arg2: {},
-        apiConfig: {}
       }
     };
     const dependencies = {
       testDep: {
         accessSchema,
         params: {
-          apiConfig: {value: {
-            foo: 'bar',
-            bar: 'baz',
-          }},
+          foo: { value: 'bar' },
+          bar: { value: 'baz' },
           arg1: { value: 'foo' },
           arg2: { value: 'bar' },
         }
