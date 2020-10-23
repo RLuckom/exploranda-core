@@ -16,9 +16,9 @@ describe('genericFunctionRecordCollector', () => {
         name: 'fake'
       },
       apiMethod: {
-        name: 'asyncArgOrderDependency'
+        name: 'asyncArgOrderDependency',
+        argumentOrder: ['foo', 'bar'],
       },
-      argumentOrder: ['foo', 'bar'],
       requiredParams: {
         foo: {},
         bar: {}
@@ -48,7 +48,9 @@ describe('genericFunctionRecordCollector', () => {
       namespaceDetails: {
         paramDriven: true
       },
-      argumentOrder: ['foo', 'bar'],
+      apiMethod: {
+        argumentOrder: ['foo', 'bar'],
+      },
       requiredParams: {
         apiConfig: {},
         foo: {},
@@ -154,9 +156,9 @@ describe('genericFunctionRecordCollector', () => {
       },
       apiMethod: {
         isSync: true,
-        name: 'syncArgOrderDependency'
+        name: 'syncArgOrderDependency',
+        argumentOrder: ['foo', 'bar'],
       },
-      argumentOrder: ['foo', 'bar'],
       requiredParams: {
         foo: {},
         bar: {}
@@ -552,6 +554,86 @@ describe('genericFunctionRecordCollector', () => {
       apiMethod: {
         isSync: true,
         name: 'returnedMethod'
+      },
+      requiredParams: {
+        foo: {},
+        bar: {},
+        arg1: {},
+        arg2: {},
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          foo: { value: 'bar' },
+          bar: { value: 'baz' },
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do bound constructed sync param with arg order', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        name: 'fake.constructableArgOrderSyncParamDependencyThis',
+        initialize: { 
+          argumentOrder: ['foo', 'bar'],
+        },
+      },
+      apiMethod: {
+        isSync: true,
+        name: 'returnedMethod'
+      },
+      requiredParams: {
+        foo: {},
+        bar: {},
+        arg1: {},
+        arg2: {},
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          foo: { value: 'bar' },
+          bar: { value: 'baz' },
+          arg1: { value: 'foo' },
+          arg2: { value: 'bar' },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
+    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep[0]).toEqual('baz')
+      done()
+    })
+  })
+
+  it('can do bound extended constructed sync param with arg order', (done) => {
+    const accessSchema = {
+      dataSource: exampleDataSource,
+      namespaceDetails: {
+        name: 'fake.constructableArgOrderSyncParamDependencyThisExtended',
+        initialize: { 
+          argumentOrder: ['foo', 'bar'],
+        },
+      },
+      apiMethod: {
+        isSync: true,
+        name: ['intermediate', 'returnedMethod']
       },
       requiredParams: {
         foo: {},
