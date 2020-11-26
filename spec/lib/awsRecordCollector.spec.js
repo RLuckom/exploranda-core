@@ -21,6 +21,8 @@ const arrayAndRecordMixedSchema = {
       detectArray: (param) => _.isArray(_.get(param, 0)),
       max: 2
     }
+  },
+  optionalParams: {
   }
 };
 
@@ -39,6 +41,11 @@ const recordAndLiteralParamSchema = {
     cluster: {
       type: 'ClusterArn',
     },
+  },
+  optionalParams: {
+    services: {
+      detectArray: (a) => _.isArray(_.get(a, 0))
+    }
   }
 };
 
@@ -57,6 +64,9 @@ const recordAndLiteralParamSchemaWithMergeIndividual = {
     cluster: {
       type: 'ClusterArn',
     },
+    services: {
+      detectArray: (param) => _.isArray(_.get(param, 0)),
+    }
   },
   mergeIndividual: (resultsArray) => {
     return 42;
