@@ -3,7 +3,7 @@ const {kinesisStreams, kinesisStream, kinesisStreamMetrics} = require('../../lib
 const {awsMock} = require('../awsMock');
 const {requestMock} = require('../requestMock');
 const genericApiRecordCollector = require('../../lib/recordCollectors/genericApiRecordCollector');
-const { Gopher } = require('../../lib/gopher.js');
+const { Gopher } = require('../../index.js');
 
 const genericApiLookupRecords = genericApiRecordCollector.lookUpRecords;
 
