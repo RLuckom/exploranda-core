@@ -1,6 +1,6 @@
 {
   "name": "exploranda-core",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "exploranda data access components",
   "main": "index.js",
   "scripts": {
@@ -29,6 +29,26 @@
     "parse-link-header": "^1.0.1",
     "qs": "^6.9.4",
     "sharp": "^0.26.1"
+  },
+  "peerDependenciesMeta": {
+    "aws-sdk": {
+      "optional": true
+    },
+    "googleapis": {
+      "optional": true
+    },
+    "needle": {
+      "optional": true
+    },
+    "parse-link-header": {
+      "optional": true
+    },
+    "qs": {
+      "optional": true
+    },
+    "sharp": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "aws-sdk": "^2.775.0",
