@@ -560,7 +560,7 @@ const slackInputTestCase = {
     target: 'slack',
     preCache: {},
     preInputs: {},
-    inputs: {},
+    phaseInputs: {},
     postInputs: {},
     mocks: {
       slack: {
@@ -618,7 +618,7 @@ const slackInputUrlParamTestCase = {
     target: 'slack',
     preCache: {},
     preInputs: {},
-    inputs: {},
+    phaseInputs: {},
     postInputs: {},
     mocks: {
       slack: {
@@ -677,7 +677,7 @@ const slackInputUrlApiConfigParamTestCase = {
     target: 'slack',
     preCache: {},
     preInputs: {},
-    inputs: {},
+    phaseInputs: {},
     postInputs: {},
     mocks: {
       slack: {
@@ -744,7 +744,7 @@ const slackInputErrorHandlerInAccessSchemaTestCase = {
     target: 'slack',
     preCache: {},
     preInputs: {},
-    inputs: {},
+    phaseInputs: {},
     postInputs: {},
     mocks: {
       slack: {
@@ -816,7 +816,7 @@ const slackInputErrorHandlerInDependencySchemaTestCase = {
     target: 'slack',
     preCache: {},
     preInputs: {},
-    inputs: {},
+    phaseInputs: {},
     postInputs: {},
     mocks: {
       slack: {
@@ -879,11 +879,82 @@ const elasticsearchInputNoDefaultTestCase = {
     target: 'elasticsearch',
     preCache: {},
     preInputs: {},
-    inputs: {
+    phaseInputs: {
       esSearchQuery: 'input1'
     },
     postInputs: {
       esSearchQuery: 'input1'
+    },
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: 'input1'},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchInputOptionalDefaultTestCase = {
+  name: 'Elasticsearch input requests test case1',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: { value: {queryString: 'input1'}},
+        apikey: {
+          input: 'apikey',
+          formatter: ({apikey}) => {
+            return apikey;
+          },
+        },
+      }
+    },
+  },
+  inputs: {
+    apikey: 'secretApiKey',
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {
+      apikey: 'secretApiKey',
+    },
+    phaseInputs: {
+    },
+    postInputs: {
+      apikey: 'secretApiKey',
     },
     mocks: {
       elasticsearch: {
@@ -1176,7 +1247,7 @@ const elasticsearchInputTestCase = {
     time: 500,
     target: 'elasticsearch',
     preCache: {},
-    inputs: {
+    phaseInputs: {
       esSearchQuery: 'input3'
     },
     preInputs: {
@@ -1649,6 +1720,7 @@ const cachingTestCases = [
   elasticsearchErrorTestCase,
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
+  elasticsearchInputOptionalDefaultTestCase,
   slackInputTestCase,
   slackInputUrlParamTestCase,
   slackInputUrlApiConfigParamTestCase,
