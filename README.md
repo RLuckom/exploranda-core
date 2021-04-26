@@ -117,7 +117,7 @@ objects, determining the correct order in which to fetch them, using
 each dependency's specified `accessSchema`, parameters, and the `recordCollector`
 specified by the access schema to collect the value from the `dataSource`,
 and using the values collected to construct the parameters of subsequent
-dependencies that require them. The `Gopher` object is defined in [lib/composer.js](lib/composer.js)
+dependencies that require them. The `Gopher` object is defined in [lib/gopher.js](lib/gopher.js)
 
 ## Dependencies
 
@@ -128,6 +128,7 @@ parameters to use to get it. A very simple dependency object looks like this:
 
 ```javascript
 const {kinesisStreams, kinesisStream} = require('exploranda').dataSources.AWS.kinesis;
+const {listBucket} = require('exploranda').dataSources.AWS.s3;
 
 const apiConfig = {region: 'us-east-1'};
 
@@ -145,12 +146,22 @@ const dataDependencies = {
         formatter: ({kinesisNames}) => kinesisNames
       }
     }
-  }
+  },
+  bucketContents: {
+    accessSchema: listBucket,
+    params: {
+      apiConfig: {value: apiConfig},
+      Bucket: {
+        input: 'bucketName'
+        formatter: ({bucketName}) => bucketName
+      }
+    }
+  },
 };
 ```
 
-This object specifies two pieces of data: an array of AWS Kinesis Stream names and an array
-of Kinesis Stream objects returned from the AWS API. 
+This object specifies three pieces of data: an array of AWS Kinesis Stream names and an array
+of Kinesis Stream objects returned from the AWS API, plus the listing of a bucket specified as input. 
 
 Each dependency defines some attributes:
 
@@ -160,8 +171,8 @@ Each dependency defines some attributes:
                  sections at the end of this document.
 
 `params` : Object. Parameters to fulfill the requirements of the AccessSchema or override defaults.
-          the `params` object allows you to specify a static value, a runtime-generated value, or a 
-          value computed from another dependency. For the keys to specify on the `params` object, look
+          the `params` object allows you to specify a static value, a runtime-generated value, a 
+          value computed from another dependency, or an input. For the keys to specify on the `params` object, look
           at the `params` and `requiredParams` fields on the `accessSchema` object, and any associated
           documentation. For instance, the accessSchema `kinesisStream` in the example above specifies
           the way to use the aws `describeStreams` method, so the `params` for that dependency can include
@@ -195,7 +206,8 @@ Each dependency defines some attributes:
 
 #### Dependency Params
 
-The values on the `params` object can be used to specify a static value, a runtime-generated value, or
+The values on the `params` object can be used to specify a static value, a runtime-generated value, an
+input provided to the Gopher object on creation or when the `report function is called, or
 a value computed from the data returned in other dependencies. 
 
 To specify a static value, set the `value` attribute to the value you want to use:
@@ -270,6 +282,56 @@ const dataDependencies = {
 Note that `formatter` functions should be prepared to deal with cases when the data they expect is not
 available.
 
+To specify an input value, set the `input` attribute to the name of the input desired. In the dependency object,
+`input` schemas behave similarly to `source` schemas--there is a namespace of inputs (like there is a namespace
+of dependencies) from which inputs can be selected. A `formatter` function is generally needed to process the input
+into the format expected by the accessSchema object. The next paragraphs explain how inputs are supplied and used.
+
+```javascript
+const {listBucket} = require('exploranda').dataSources.AWS.s3;
+const Gopher = require('exploranda').Gopher
+const apiConfig = {region: 'us-east-1'};
+
+const dataDependencies = {
+  bucketContents: {
+    accessSchema: listBucket,
+    params: {
+      apiConfig: {value: apiConfig},
+      StreamName: {
+        input: 'bucketName',
+        formatter: ({bucketName}) => bucketName
+      }
+    }
+  }
+};
+
+const inputDefaults = {
+  bucketName: 'my-example-bucket'
+}
+
+const goph = Gopher(dataDependencies, inputDefaults)
+
+// list the contents of the 'my-example-bucket' bucket
+goph.report(callback)
+
+inputOverrides = {
+  bucketName: 'overridden-bucket-name'
+}
+
+// list the contents of the 'overridden-bucket-name' bucket (note the 'null' first
+// argument. The first argument is used to specify a "target" dependency name; if present,
+// instead of resolving the entire dependency graph, the reporter will only fetch what is directly
+// needed to get the targeted dependency.
+goph.report(null, inputOverrides, callback)
+
+
+// list the contents of the 'overridden-bucket-name' bucket (note the 'bucketContents' first
+// argument. This explicitly saya that we want only the results of the bucketContents dependency.
+// The reporter will fetch it (as well as any dependencies on which it relies) but no other dependencies.
+goph.report('bucketContents', inputOverrides, callback)
+
+```
+
 In addition, there are parameters that are specific to dependencies
 that use the `GENERIC_API` accessSchema objects. The `apiConfig` parameter
 specifies metadata abount how to talk to the API. Certain paths on the `apiConfig`
@@ -284,20 +346,20 @@ parameter are treated specially by the `GENERIC_API` `recordCollector`:
 `apiConfig.protocol`: protocol string. See `protocol` above. defaults to `https://`
 
 `apiConfig.ca` : If provided, sets a CA for request to use when validating 
-                 the server certificate.
+                 the server certificate. Not available in the browser.
 
-`apiConfig.cert`: If provided, a client certificate to use in the request
+`apiConfig.cert`: If provided, a client certificate to use in the request. Not available in the browser.
 
-`apiConfig.key`: If provided, a client certificate key to use in the request
+`apiConfig.key`: If provided, a client certificate key to use in the request. Not available in the browser.
 
-`apiConfig.passphrase`: If provided, a passphrase to unlock the client certificate key to use in the request
+`apiConfig.passphrase`: If provided, a passphrase to unlock the client certificate key to use in the request. Not available in the browser.
 
-`apiConfig.user`: If provided, a username to use in the request auth
+`apiConfig.user`: If provided, a username to use in the request auth. Not available in the browser.
 
-`apiConfig.pass`: If provided, a password to use in the request auth
+`apiConfig.pass`: If provided, a password to use in the request auth. Not available in the browser.
 
 `apiConfig.token`: If provided, a bearer token to use in the request auth.
-                   This will override user:pass auth if both are provided.
+                   This will override user:pass auth if both are provided. Not available in the browser.
 
 `apiConfig.pathParamKeys`: If provided, will be concatenated with the sourceSchema's `pathParamKeys`
                            array described above.
