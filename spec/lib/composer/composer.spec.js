@@ -990,6 +990,90 @@ const elasticsearchInputOptionalDefaultTestCase = {
   ]
 };
 
+const elasticsearchInputSourceReliantTestCase = {
+  name: 'Elasticsearch input requests test case2',
+  dataDependencies: {
+    dummy: kinesisNamesDependency(1000),
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: { 
+          source: 'dummy',
+          formatter: () => {
+            return {queryString: 'input1'}
+          }
+        },
+        apikey: {
+          input: 'apikey',
+          formatter: ({apikey}) => {
+            return apikey;
+          },
+        },
+      }
+    },
+  },
+  inputs: {
+    apikey: 'secretApiKey',
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {
+      apikey: 'secretApiKey',
+    },
+    phaseInputs: {
+    },
+    postInputs: {
+      apikey: 'secretApiKey',
+    },
+    mocks: {
+      dummy: {
+        source: 'AWS',
+        sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
+      },
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: 'input1'},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      dummy: ['foo', 'bar', 'baz'],
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {
+      dummy: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
+    },
+  },
+  ]
+};
+
 const elasticsearchErrorTestCase = {
   name: 'Elasticsearch error test case with retry',
   dataDependencies: {
@@ -1721,6 +1805,7 @@ const cachingTestCases = [
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
   elasticsearchInputOptionalDefaultTestCase,
+  elasticsearchInputSourceReliantTestCase,
   slackInputTestCase,
   slackInputUrlParamTestCase,
   slackInputUrlApiConfigParamTestCase,
