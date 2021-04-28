@@ -919,6 +919,115 @@ const elasticsearchInputNoDefaultTestCase = {
   ]
 };
 
+const elasticsearchInputPlusDependencyTestCase = {
+  name: 'Elasticsearch input requests test case3',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          input: 'esSearchQuery',
+          formatter: ({esSearchQuery}) => {
+            return {queryString: esSearchQuery};
+          },
+        },
+        bogusParam: {
+          source: 'dependent',
+          formatter: _.identity
+        }
+      }
+    },
+    dependent: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {value: {
+          queryString: 'query'
+        }},
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    phaseInputs: {
+      esSearchQuery: 'input1'
+    },
+    postInputs: {
+      esSearchQuery: 'input1'
+    },
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: 'input1'},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      },
+      dependent: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: 'query'},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      dependent: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
 const elasticsearchInputOptionalDefaultTestCase = {
   name: 'Elasticsearch input requests test case1',
   dataDependencies: {
@@ -1806,6 +1915,7 @@ const cachingTestCases = [
   elasticsearchInputNoDefaultTestCase,
   elasticsearchInputOptionalDefaultTestCase,
   elasticsearchInputSourceReliantTestCase,
+  elasticsearchInputPlusDependencyTestCase,
   slackInputTestCase,
   slackInputUrlParamTestCase,
   slackInputUrlApiConfigParamTestCase,
