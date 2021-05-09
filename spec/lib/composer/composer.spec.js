@@ -919,6 +919,160 @@ const elasticsearchInputNoDefaultTestCase = {
   ]
 };
 
+const elasticsearchInputMissingTargetedTestCase = {
+  name: 'Elasticsearch targeted request missing an input for a different dep',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          input: 'esSearchQuery',
+          formatter: ({esSearchQuery}) => {
+            return {queryString: esSearchQuery};
+          },
+        },
+      }
+    },
+    elasticsearch2: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          input: 'esSearchQuery2',
+          formatter: ({esSearchQuery2}) => {
+            throw new Error('incorrect formatter call')
+          },
+        },
+        query2: {
+          input: 'esSearchQuery2',
+          formatter: ({esSearchQuery2}) => {
+            throw new Error('incorrect formatter call')
+          },
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {},
+    phaseInputs: {
+      esSearchQuery: 'input1'
+    },
+    postInputs: {
+      esSearchQuery: 'input1'
+    },
+    mocks: {
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: 'input1'},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {},
+  },
+  ]
+};
+
+const elasticsearchInputMissingTestCase = {
+  name: 'Elasticsearch request missing an input',
+  dataDependencies: {
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          input: 'esSearchQuery',
+          formatter: ({esSearchQuery}) => {
+            return {queryString: esSearchQuery};
+          },
+        },
+      }
+    },
+    elasticsearch2: {
+      accessSchema: elasticsearch.search,
+      params: {
+        'apikey' : {value: 'secretApiKey'},
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: {
+          input: 'esSearchQuery2',
+          formatter: ({esSearchQuery2}) => {
+            throw new Error('incorrect formatter call')
+          },
+        },
+        query2: {
+          input: 'esSearchQuery2',
+          formatter: ({esSearchQuery2}) => {
+            throw new Error('incorrect formatter call')
+          },
+        },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: null,
+    preCache: {},
+    preInputs: {},
+    phaseInputs: {
+      esSearchQuery: 'input1'
+    },
+    postInputs: {
+      esSearchQuery: 'input1'
+    },
+    mocks: {
+    },
+    expectedError: new Error('elasticsearch2 has an invalid input: esSearchQuery2 not in {"esSearchQuery":"input1"}'),
+    postCache: {},
+  },
+  ]
+};
+
 const elasticsearchInputPlusDependencyTestCase = {
   name: 'Elasticsearch input requests test case3',
   dataDependencies: {
@@ -1914,6 +2068,8 @@ const cachingTestCases = [
   elasticsearchErrorDefaultTestCase,
   elasticsearchInputNoDefaultTestCase,
   elasticsearchInputOptionalDefaultTestCase,
+  elasticsearchInputMissingTestCase,
+  elasticsearchInputMissingTargetedTestCase,
   elasticsearchInputSourceReliantTestCase,
   elasticsearchInputPlusDependencyTestCase,
   slackInputTestCase,
