@@ -1638,7 +1638,7 @@ const elasticsearchInputTestCase = {
 };
 
 const awsCachingTargetingTestCase = {
-  name: 'Single-source caching request case',
+  name: 'Single-source targeted caching request case',
   dataDependencies: {
     kinesisNames: kinesisNamesDependency(1000),
     kinesisStreams: {
