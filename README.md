@@ -190,6 +190,7 @@ Each dependency defines some attributes:
             referencing it elsewhere.
 
 `behaviors` : Object (optional), settings for how the results are fetched. Currently implemented are
+              `maybeNull`, which turns off the error-on-null behavior for the response, allowing no response
               `parallelLimit`, which controls how many parallel calls will be made at once
               for a given dependency in most situations ("tree" calls are the exception). 
               `retryParams`, an object passed as the first argument to
