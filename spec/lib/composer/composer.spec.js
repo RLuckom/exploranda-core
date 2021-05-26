@@ -1331,8 +1331,9 @@ const elasticsearchInputSourceReliantTestCase = {
         },
         query: { 
           source: 'dummy',
-          formatter: () => {
-            return {queryString: 'input1'}
+          input: 'in2',
+          formatter: (n, {in2}) => {
+            return {queryString: in2}
           }
         },
         apikey: {
@@ -1346,6 +1347,7 @@ const elasticsearchInputSourceReliantTestCase = {
   },
   inputs: {
     apikey: 'secretApiKey',
+    in2: 4,
   },
   phases: [
   {
@@ -1354,11 +1356,13 @@ const elasticsearchInputSourceReliantTestCase = {
     preCache: {},
     preInputs: {
       apikey: 'secretApiKey',
+      in2: 4,
     },
     phaseInputs: {
     },
     postInputs: {
       apikey: 'secretApiKey',
+      in2: 4,
     },
     mocks: {
       dummy: {
@@ -1373,7 +1377,98 @@ const elasticsearchInputSourceReliantTestCase = {
             headers: {},
             qs: {apikey: 'secretApiKey'},
             body: {
-              query: {queryString: 'input1'},
+              query: {queryString: 4},
+            },
+            json: true,
+            multipart: false,
+            method: 'POST',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {hits: {hits: ['bar', 'baz']}},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      dummy: ['foo', 'bar', 'baz'],
+      elasticsearch: [{
+        hits: {
+          hits: ['bar', 'baz'],
+        },
+      }],
+    },
+    postCache: {
+      dummy: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo', 'bar', 'baz']}]
+    },
+  },
+  ]
+};
+
+const elasticsearchInputArraySourceReliantTestCase = {
+  name: 'Elasticsearch input requests test case2',
+  dataDependencies: {
+    dummy: kinesisNamesDependency(1000),
+    elasticsearch: {
+      accessSchema: elasticsearch.search,
+      params: {
+        apiConfig: {
+          value: {
+            host: 'www.example.com'
+          },
+        },
+        query: { 
+          source: 'dummy',
+          input: ['in2', 'in3'],
+          formatter: (n, {in2, in3}) => {
+            return {queryString: [in2, in3]}
+          }
+        },
+        apikey: {
+          input: 'apikey',
+          formatter: ({apikey}) => {
+            return apikey;
+          },
+        },
+      }
+    },
+  },
+  inputs: {
+    apikey: 'secretApiKey',
+    in2: 4,
+    in3: 5,
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'elasticsearch',
+    preCache: {},
+    preInputs: {
+      apikey: 'secretApiKey',
+      in2: 4,
+      in3: 5,
+    },
+    phaseInputs: {
+    },
+    postInputs: {
+      apikey: 'secretApiKey',
+      in2: 4,
+      in3: 5,
+    },
+    mocks: {
+      dummy: {
+        source: 'AWS',
+        sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']})
+      },
+      elasticsearch: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://www.example.com/_search',
+            headers: {},
+            qs: {apikey: 'secretApiKey'},
+            body: {
+              query: {queryString: [4, 5]},
             },
             json: true,
             multipart: false,
