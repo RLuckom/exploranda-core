@@ -594,6 +594,70 @@ const slackInputTestCase = {
   ]
 };
 
+const slackInputFormattingTestCase = {
+  name: 'slack formmatin8g input requests test case',
+  dataDependencies: {
+    slack: {
+      accessSchema: {
+        dataSource: 'GENERIC_API',
+        host: 'slack.com',
+        path: '/api/conversations.list',
+        formParamKeys: ['token'],
+        bodyParamKeys: [],
+        multipart: true,
+      },
+      formatter: (r, inputs) => {
+        console.log(inputs)
+        return inputs.foo
+      },
+      params: {
+        token : {value: 'secrettoken'},
+      }
+    },
+  },
+  inputs: {
+    foo: 'bar',
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'slack',
+    preCache: {},
+    preInputs: {
+      foo: 'bar',
+    },
+    phaseInputs: {},
+    postInputs: {
+      foo: 'bar',
+    },
+    mocks: {
+      slack: {
+        source: 'GENERIC_API',
+        sourceConfig: [{
+          callParameters: {
+            url: 'https://slack.com/api/conversations.list',
+            headers: {},
+            qs: {},
+            body: void(0),
+            json: true,
+            multipart: true,
+            method: 'GET',
+          },
+          error: null,
+          response: {statusCode: 200},
+          body: {channels: [1, 2]},
+        }], 
+      }
+    },
+    expectedError: null,
+    expectedValues: {
+      slack: 'bar',
+    },
+    postCache: {},
+  },
+  ]
+};
+
 const slackInputUrlParamTestCase = {
   name: 'slack form input requests test case',
   dataDependencies: {
@@ -2073,6 +2137,7 @@ const cachingTestCases = [
   elasticsearchInputSourceReliantTestCase,
   elasticsearchInputPlusDependencyTestCase,
   slackInputTestCase,
+  slackInputFormattingTestCase,
   slackInputUrlParamTestCase,
   slackInputUrlApiConfigParamTestCase,
   slackInputErrorHandlerInAccessSchemaTestCase,
