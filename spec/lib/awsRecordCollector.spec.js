@@ -256,13 +256,14 @@ describe('lookupRecords', function() {
     });
   });
   describe('recursion case--required params', function() {
-    it('should get the dependencies, and then the requested records', function() {
+    it('shouldd get the dependencies, and then the requested records', function() {
       let callbackCalled = 0;
       const params = {p1: 'p2', apiConfig: {region: 'us-east-1'}};
       const returnStream1 = {StreamDescription: {StreamName: 'stream1'}};
       const returnStream2 = {StreamDescription: {StreamName: 'stream2'}};
       const returnStream3 = {StreamDescription: {StreamName: 'stream3'}};
-      lookUpRecords(kinesisStream, params, {}, (err, response) => {
+      lookUpRecords(kinesisStream, params, {}, (err, response, metrics) => {
+        expect(metrics).toBeTruthy()
         expect(response).toEqual([
           returnStream1.StreamDescription,
           returnStream2.StreamDescription,

@@ -48,7 +48,8 @@ function executeBasicTestSuite(suiteName, testCases) {
         });
         const gopher = Gopher(dataDependencies)
         setMocks(gopher);
-        gopher.report((err, response) => {
+        gopher.report((err, response, metrics) => {
+          expect(metrics).toBeTruthy()
           expect(response).toEqual(expectedResult);
           _.each(mockBuilders, (mb) => {
             mb.verifyExpectations();
@@ -104,7 +105,7 @@ function executeCachingTestSuite(suiteName, testCases) {
       it(name, function(done) {
         let phasesFinished = 0;
         const gopher = new Gopher(dataDependencies, inputs);
-        _.each(phases, ({time, mocks, phaseInputs, expectedValues, expectedError, target, inputOverrides, preCache, postCache, preInputs, postInputs}) => {
+        _.each(phases, ({time, mocks, phaseInputs, expectedValues, expectedError, target, inputOverrides, preCache, postCache, preInputs, postInputs, expectedMetrics}) => {
           setTimeout(() => {
             console.log(`starting phase ${phasesFinished + 1}`);
             buildMocks();
@@ -121,7 +122,11 @@ function executeCachingTestSuite(suiteName, testCases) {
             _.each(phaseInputs, (value, path) => {
               gopher.setInput(path, value);
             });
-            function testAssertionCallback(err, response) {
+            function testAssertionCallback(err, response, metrics) {
+              expect(metrics).toBeTruthy()
+              if (expectedMetrics) {
+                expect(metrics).toEqual(expectedMetrics)
+              }
               expect(err).toEqual(expectedError);
               expect(response).toEqual(expectedValues);
               _.each(mockBuilders, (mb) => {

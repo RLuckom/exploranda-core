@@ -313,6 +313,7 @@ const awsCachedDependencyRequirementTestCase = {
   phases: [
   {
     time: 0,
+    expectedMetrics:{ 'kinesisNames.AWS.kinesisStreams': { paramSets: 1, successes: 1 } }, 
     target: 'kinesisNames',
     preCache: {},
     mocks: {
@@ -331,6 +332,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 300,
+    expectedMetrics: {'kinesisNames1.AWS.kinesisStreams':{ paramSets: 1, successes: 1 } }, 
     target: 'kinesisNames1',
     preCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo']}]
@@ -352,6 +354,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 500,
+    expectedMetrics: { 'kinesisNames.AWS.kinesisStreams':{ cached: 1 } }, 
     mocks: {},
     target: ['kinesisNames'],
     preCache: {
@@ -369,6 +372,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 700,
+    expectedMetrics: { 'kinesisNames.AWS.kinesisStreams': { cached: 1 }, 'kinesisNames1.AWS.kinesisStreams': { cached: 1 }, 'kinesisStreams.AWS.kinesisStream':{ paramSets: 2, successes: 2 } } , 
     mocks: {
       kinesisStreams: {
         source: 'AWS',
@@ -402,6 +406,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 900,
+    expectedMetrics: { 'kinesisNames.AWS.kinesisStreams':{cached: 1 }, 'kinesisNames1.AWS.kinesisStreams':{ cached: 1 }, 'kinesisStreams.AWS.kinesisStream': { cached: 1 } }, 
     mocks: {},
     target: 'kinesisStreams',
     preCache: {
@@ -518,6 +523,7 @@ const vaultTreeTestCase = {
         }],
       }
     },
+    expectedMetrics: { 'vaultKeys.GENERIC_API.vaultTree': { paramSets: 1, successes: 4 } },
     expectedError: null,
     expectedValues: {
       vaultKeys: [{
@@ -582,6 +588,7 @@ const slackInputTestCase = {
       }
     },
     expectedError: null,
+    expectedMetrics: { 'slack.GENERIC_API.undefined':{ paramSets: 1, successes: 1 } }, 
     expectedValues: {
       slack: [{
         body: {channels: [1, 2]},
