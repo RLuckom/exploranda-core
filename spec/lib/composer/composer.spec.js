@@ -313,7 +313,7 @@ const awsCachedDependencyRequirementTestCase = {
   phases: [
   {
     time: 0,
-    expectedMetrics:{ 'kinesisNames.AWS.kinesisStreams': { paramSets: 1, successes: 1 } }, 
+    expectedMetrics:{ 'kinesisNames.AWS.kinesisStreams': { paramSets: 1, successes: 1, retries: 1 } }, 
     target: 'kinesisNames',
     preCache: {},
     mocks: {
@@ -332,7 +332,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 300,
-    expectedMetrics: {'kinesisNames1.AWS.kinesisStreams':{ paramSets: 1, successes: 1 } }, 
+    expectedMetrics: {'kinesisNames1.AWS.kinesisStreams':{ paramSets: 1, successes: 1, retries: 1 } }, 
     target: 'kinesisNames1',
     preCache: {
       kinesisNames: [{collectorArgs: {apiConfig: apiConfig().value}, r: ['foo']}]
@@ -372,7 +372,7 @@ const awsCachedDependencyRequirementTestCase = {
   },
   {
     time: 700,
-    expectedMetrics: { 'kinesisNames.AWS.kinesisStreams': { cached: 1 }, 'kinesisNames1.AWS.kinesisStreams': { cached: 1 }, 'kinesisStreams.AWS.kinesisStream':{ paramSets: 2, successes: 2 } } , 
+    expectedMetrics: { 'kinesisNames.AWS.kinesisStreams': { cached: 1 }, 'kinesisNames1.AWS.kinesisStreams': { cached: 1 }, 'kinesisStreams.AWS.kinesisStream':{ paramSets: 2, successes: 2, retries: 2 } } , 
     mocks: {
       kinesisStreams: {
         source: 'AWS',
@@ -523,7 +523,7 @@ const vaultTreeTestCase = {
         }],
       }
     },
-    expectedMetrics: { 'vaultKeys.GENERIC_API.vaultTree': { paramSets: 1, successes: 4 } },
+    expectedMetrics: { 'vaultKeys.GENERIC_API.vaultTree': { paramSets: 1, successes: 4, retries: 4 } },
     expectedError: null,
     expectedValues: {
       vaultKeys: [{
@@ -588,7 +588,7 @@ const slackInputTestCase = {
       }
     },
     expectedError: null,
-    expectedMetrics: { 'slack.GENERIC_API.undefined':{ paramSets: 1, successes: 1 } }, 
+    expectedMetrics: { 'slack.GENERIC_API.undefined':{ paramSets: 1, successes: 1, retries: 1 } }, 
     expectedValues: {
       slack: [{
         body: {channels: [1, 2]},
@@ -1516,7 +1516,7 @@ const elasticsearchErrorTestCase = {
           console.log(b);
           return e;
         },
-        retryParams: {times: 2},
+        retryParams: {times: 3},
       },
       params: {
         'apikey' : {value: 'secretApiKey'},
@@ -1535,12 +1535,29 @@ const elasticsearchErrorTestCase = {
   {
     time: 0,
     target: 'elasticsearch',
+    expectedMetrics: { 'elasticsearch.GENERIC_API.elasticsearchSearch': { paramSets: 1, successes: 1, retries: 3, retryErrors: 2 } },
     preCache: {},
     preInputs: {},
     mocks: {
       elasticsearch: {
         source: 'GENERIC_API',
         sourceConfig: [
+          {
+            callParameters: {
+              url: 'https://www.example.com/_search',
+              headers: {},
+              qs: {apikey: 'secretApiKey'},
+              body: {
+                query: {queryString: 'searchTerm'},
+              },
+              multipart: false,
+              json: true,
+              method: 'POST',
+            },
+            error: "bad error",
+            response: {statusCode: 400},
+            body: null,
+          },
           {
             callParameters: {
               url: 'https://www.example.com/_search',
