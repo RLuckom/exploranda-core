@@ -82,7 +82,7 @@ describe('genericFunctionRecordCollector', () => {
 
   it('can do param-driven async param parallel', (done) => {
     const accessSchema = {
-      dataSource: exampleDataSource,
+      dataSource: 'GENERIC_FUNCTION',
       namespaceDetails: {
         paramDriven: true,
         parallel: true,
@@ -108,7 +108,45 @@ describe('genericFunctionRecordCollector', () => {
       }
     }
     const gopher = Gopher(dependencies)
-    gopher.recordCollectors[exampleDataSource] = buildSDKCollector({getApi: genericFunctionRecordCollector, dependencyMap: {}})
+    gopher.report((e, r) => {
+      expect(e).toBeFalsy()
+      expect(r.testDep).toEqual(['baz', 'baz'])
+      done()
+    })
+  })
+
+  it('example of arbitrary async function', (done) => {
+    const accessSchema = {
+      dataSource: 'GENERIC_FUNCTION',
+      namespaceDetails: {
+        paramDriven: true,
+        parallel: true,
+      },
+      requiredParams: {
+        apiConfig: {},
+        arg1: {},
+        arg2: {}
+      }
+    };
+    const dependencies = {
+      testDep: {
+        accessSchema,
+        params: {
+          apiConfig: {
+            value: {
+              apiObject: function asyncParamDependency(params, callback) {
+                expect(params.arg1).toEqual('foo')
+                expect(params.arg2).toEqual('bar')
+                setTimeout(() => { callback(null, 'baz') }, 0)
+              }
+            },
+          },
+          arg1: { value: ['foo', 'foo'] },
+          arg2: { value: ['bar', 'bar'] },
+        }
+      }
+    }
+    const gopher = Gopher(dependencies)
     gopher.report((e, r) => {
       expect(e).toBeFalsy()
       expect(r.testDep).toEqual(['baz', 'baz'])

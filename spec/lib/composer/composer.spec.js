@@ -543,6 +543,55 @@ const vaultTreeTestCase = {
   ]
 };
 
+const genericFunctionExampleTestCase = {
+  name: 'generic fn example0',
+  dataDependencies: {
+    fun: {
+      accessSchema: {
+        dataSource: 'GENERIC_FUNCTION',
+        namespaceDetails: {
+          paramDriven: true,
+          parallel: true,
+        },
+        requiredParams: {
+          apiConfig: {},
+          arg1: {},
+          arg2: {}
+        }
+      },
+      params: {
+        apiConfig: {
+          value: {
+            apiObject: function asyncParamDependency(params, callback) {
+              expect(params.arg1).toEqual('foo')
+              expect(params.arg2).toEqual('bar')
+              setTimeout(() => { callback(null, 'baz') }, 0)
+            }
+          },
+        },
+        arg1: { value: 'foo' },
+        arg2: { value: 'bar' },
+      }
+    },
+  },
+  phases: [
+  {
+    time: 0,
+    target: 'fun',
+    preCache: {},
+    preInputs: {},
+    phaseInputs: {},
+    postInputs: {},
+    mocks: {},
+    expectedError: null,
+    expectedValues: {
+      fun: ['baz'],
+    },
+    postCache: {},
+  },
+  ]
+};
+
 const slackInputTestCase = {
   name: 'slack form input requests test case',
   dataDependencies: {
@@ -2255,6 +2304,7 @@ const cachingTestCases = [
   elasticsearchInputMissingTargetedTestCase,
   elasticsearchInputSourceReliantTestCase,
   elasticsearchInputPlusDependencyTestCase,
+  genericFunctionExampleTestCase,
   slackInputTestCase,
   slackInputFormattingTestCase,
   slackInputUrlParamTestCase,
