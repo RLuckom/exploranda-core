@@ -109,11 +109,52 @@ function kinesisNamesDependency(cacheLifetime) {
   };
 }
 
+function twiceKinesisNamesDependency(mergeIndividual, cacheLifetime) {
+  return {
+    accessSchema: kinesisStreams,
+    behaviors: {
+      mergeIndividual,
+      cacheLifetime,
+    },
+    params: {
+      apiConfig: {value: [
+        _.merge({region: 'us-east-1'}, keys),
+        _.merge({region: 'us-east-1'}, keys),
+      ]}
+    }
+  };
+}
+
 function kinesisNamesMock() {
   return {
     source: 'AWS',
     sourceConfig: successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']}),
     expectedValue: ['foo', 'bar', 'baz']
+  };
+}
+
+function twiceKinesisNamesUnmergedMock() {
+  return {
+    source: 'AWS',
+    sourceConfig: [
+      successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']}),
+      successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']}),
+    ],
+    expectedValue: [
+      ['foo', 'bar', 'baz'],
+      ['foo', 'bar', 'baz'],
+    ]
+  };
+}
+
+function twiceKinesisNamesMock() {
+  return {
+    source: 'AWS',
+    sourceConfig: [
+      successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']}),
+      successfulKinesisCall('listStreams', [{Limit: 100}], {StreamNames: ['foo', 'bar', 'baz']}),
+    ],
+    expectedValue: ['foo', 'bar', 'baz', 'foo', 'bar', 'baz'],
   };
 }
 
@@ -188,6 +229,34 @@ const basicAwsTestCase = {
   },
   namedMocks: {
     kinesisNames: kinesisNamesMock(),
+  },
+};
+
+const basicAwsTestCase2 = {
+  name: 'Basic Twice-AWS-request case',
+  dataDependencies: {
+    // add a cacheLifetime. This test does not rely on caching.
+    // It only makes one request. Adding a cacheLifetime should
+    // mean that the result gets cached, which should not interfere
+    // with the success of this test case.
+    kinesisNames: twiceKinesisNamesDependency(_.identity)
+  },
+  namedMocks: {
+    kinesisNames: twiceKinesisNamesUnmergedMock(),
+  },
+};
+
+const basicAwsTestCase3 = {
+  name: 'Basic Twice-AWS-request case',
+  dataDependencies: {
+    // add a cacheLifetime. This test does not rely on caching.
+    // It only makes one request. Adding a cacheLifetime should
+    // mean that the result gets cached, which should not interfere
+    // with the success of this test case.
+    kinesisNames: twiceKinesisNamesDependency()
+  },
+  namedMocks: {
+    kinesisNames: twiceKinesisNamesMock(),
   },
 };
 
@@ -2278,6 +2347,8 @@ const awsWithParamFormatter = {
 
 const basicTestCases = [
   basicAwsTestCase,
+  basicAwsTestCase2,
+  basicAwsTestCase3,
   twoAWSAndOneSyntheticTestCase,
   basicAwsWithGenerator,
   basicAwsWithFormatter,
