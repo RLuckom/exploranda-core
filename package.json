@@ -26,7 +26,7 @@
     "aws-sdk": "^2.764.0",
     "googleapis": "^60.0.1",
     "needle": "^2.5.2",
-    "parse-link-header": "^1.0.1",
+    "parse-link-header": "^2.0.0",
     "qs": "^6.9.4",
     "sharp": "^0.26.1"
   },
@@ -57,7 +57,7 @@
     "jasmine": "^3.6.1",
     "moment": "^2.29.1",
     "needle": "^2.5.2",
-    "parse-link-header": "^1.0.1",
+    "parse-link-header": "^2.0.0",
     "qs": "^6.9.4",
     "rewire": "^4.0.1"
   }
