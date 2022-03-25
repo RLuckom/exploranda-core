@@ -2,6 +2,7 @@ npm-debug.log
 exploranda-browser.js
 local
 node_modules
+.terraform
 .DS_STORE
 *.swp
 dist
