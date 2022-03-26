@@ -1,4 +1,5 @@
 'use strict;'
+window.process = {env: {}}
 const _ = require('lodash');
 const asyncLib = require('async')
 const {Gopher} = require('./lib/gopher');
@@ -14,6 +15,7 @@ if (!window['_']) {
 if (!window['asyncLib']) {
   window.asyncLib = asyncLib
 }
+
 
 module.exports = {
   dataSources,
