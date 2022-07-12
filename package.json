@@ -1,6 +1,6 @@
 {
   "name": "exploranda-core",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "description": "exploranda data access components",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "needle": "^2.5.2",
     "parse-link-header": "^2.0.0",
     "qs": "^6.9.4",
-    "sharp": "^0.26.1"
+    "sharp": "^0.30.7"
   },
   "peerDependenciesMeta": {
     "aws-sdk": {
